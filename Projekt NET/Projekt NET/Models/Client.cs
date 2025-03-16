@@ -6,18 +6,18 @@ namespace Projekt_NET.Models
     public class Client
     {
         [Key]
-        public int clientId { get; set; }
+        public int ClientId { get; set; }
 
         [Required(ErrorMessage = "Enter client name.")]
-        public string name { get; set; }
+        public string Name { get; set; }
 
         [Required(ErrorMessage = "Enter client surname.")]
-        public string surname { get; set; }
+        public string Surname { get; set; }
 
         [Phone(ErrorMessage = "Enter a valid phone number.")]
-        public string? phoneNumber { get; set; }
+        public string? PhoneNumber { get; set; }
 
-        public List<Package> packages { get; set; } = new();
+        public List<Package> Packages { get; set; } = new();
 
         [ForeignKey("District")]
         public int DistrictId { get; set; }

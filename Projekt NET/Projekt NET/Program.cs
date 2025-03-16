@@ -1,7 +1,13 @@
+using Projekt_NET.Models;
+using Microsoft.EntityFrameworkCore;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+
+var connectionString = builder.Configuration.GetConnectionString("DRONY");
+builder.Services.AddDbContext<DroneDbContext>(x => x.UseSqlServer(connectionString));
 
 var app = builder.Build();
 
