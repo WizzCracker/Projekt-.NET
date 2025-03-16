@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Projekt_NET.Models
 {
@@ -17,5 +18,10 @@ namespace Projekt_NET.Models
         public string? phoneNumber { get; set; }
 
         public List<Package> packages { get; set; } = new();
+
+        [ForeignKey("District")]
+        public int DistrictId { get; set; }
+
+        public District District { get; set; }
     }
 }
