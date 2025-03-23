@@ -6,7 +6,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
-var connectionString = builder.Configuration.GetConnectionString("DRONY");
+var connectionString = builder.Configuration.GetConnectionString("DRONES");
 builder.Services.AddDbContext<DroneDbContext>(x => x.UseSqlServer(connectionString));
 
 var app = builder.Build();
