@@ -15,7 +15,7 @@ namespace Projekt_NET.Models
         public Drone Drone { get; set; }
         public double? Weight { get; set; }
         [Required(ErrorMessage = "Enter delivery status of package.")]
-        public Status status { get; set; }
+        public DStatus status { get; set; }
         [Required]
         public string TargetAddress { get; set; }
     }

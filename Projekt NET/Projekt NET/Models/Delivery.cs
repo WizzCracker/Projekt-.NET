@@ -10,7 +10,7 @@ namespace Projekt_NET.Models
         public int DeliveryId {  get; set; }
 
         [Required(ErrorMessage = "Enter delivery type")]
-        public DelivType Type { get; set; }
+        public DType Type { get; set; }
 
         [ForeignKey("Package")]
         public int PackageId { get; set; }

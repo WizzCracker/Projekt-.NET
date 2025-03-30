@@ -13,7 +13,7 @@ namespace Projekt_NET.Models
         public string CallSign { get; set; }
 
         [Required(ErrorMessage = "Enter drone status")]
-        public Status status { get; set; }
+        public DStatus status { get; set; }
 
         [Required]
         public int[] CurrentCoords { get; set; } = new int[2];

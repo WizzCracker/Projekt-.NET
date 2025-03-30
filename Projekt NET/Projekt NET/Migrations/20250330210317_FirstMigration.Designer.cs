@@ -12,7 +12,7 @@ using Projekt_NET.Models;
 namespace Projekt_NET.Migrations
 {
     [DbContext(typeof(DroneDbContext))]
-    [Migration("20250330204600_FirstMigration")]
+    [Migration("20250330210317_FirstMigration")]
     partial class FirstMigration
     {
         /// <inheritdoc />
