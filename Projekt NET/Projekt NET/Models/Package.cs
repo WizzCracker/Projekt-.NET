@@ -10,6 +10,9 @@ namespace Projekt_NET.Models
         [ForeignKey("Client")]
         public int ClientId { get; set; }
         public Client Client { get; set; }
+        [ForeignKey("Drone")]
+        public int DroneId { get; set; }
+        public Drone Drone { get; set; }
         public double? Weight { get; set; }
         [Required(ErrorMessage = "Enter delivery status of package.")]
         public string Status { get; set; }
