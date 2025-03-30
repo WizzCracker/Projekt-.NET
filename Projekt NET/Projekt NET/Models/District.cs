@@ -11,12 +11,13 @@ namespace Projekt_NET.Models
         public string Name { get; set;}
 
         [Required]
-        public List<float> BoundingPoints { get; set; }
+        public float[4] BoundingPoints { get; set; }
 
         [Required]
         public List<DroneCloud> DroneClouds { get; set; }
 
         [Required]
         public List<Client> Clients { get; set; }
+
     }
 }
