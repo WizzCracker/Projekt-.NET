@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Projekt_NET.Models
 {
@@ -18,7 +19,15 @@ namespace Projekt_NET.Models
         [DisplayFormat(DataFormatString = "{0:yyyy-MM-dd}", ApplyFormatInEditMode = true)]
         public DateTime ArrivDate { get; set; }
 
+        [ForeignKey("Delivery")]
+        public int DeliveryId { get; set; }
+
+        public Delivery Delivery { get; set; }
+
         [Required]
-        public int[2] DeliveryCoordinates { get; set; }
+        public float DeliveryLat { get; set; }
+
+        [Required]
+        public float DeliveryLng { get; set; }
     }
 }
