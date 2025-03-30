@@ -83,35 +83,14 @@ namespace Projekt_NET.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Packages",
-                columns: table => new
-                {
-                    PackageId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    ClientId = table.Column<int>(type: "int", nullable: false),
-                    Weight = table.Column<double>(type: "float", nullable: true),
-                    Status = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    TargetAddress = table.Column<string>(type: "nvarchar(max)", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Packages", x => x.PackageId);
-                    table.ForeignKey(
-                        name: "FK_Packages_Clients_ClientId",
-                        column: x => x.ClientId,
-                        principalTable: "Clients",
-                        principalColumn: "ClientId",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Drones",
                 columns: table => new
                 {
                     DroneId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     CallSign = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    Status = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    status = table.Column<int>(type: "int", nullable: false),
+                    CurrentCoords = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     ModelId = table.Column<int>(type: "int", nullable: false),
                     Range = table.Column<int>(type: "int", nullable: false),
                     DroneCloudId = table.Column<int>(type: "int", nullable: false),
@@ -132,6 +111,34 @@ namespace Projekt_NET.Migrations
                         principalTable: "Models",
                         principalColumn: "ModelId",
                         onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Packages",
+                columns: table => new
+                {
+                    PackageId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    ClientId = table.Column<int>(type: "int", nullable: false),
+                    DroneId = table.Column<int>(type: "int", nullable: true),
+                    Weight = table.Column<double>(type: "float", nullable: true),
+                    status = table.Column<int>(type: "int", nullable: false),
+                    TargetAddress = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Packages", x => x.PackageId);
+                    table.ForeignKey(
+                        name: "FK_Packages_Clients_ClientId",
+                        column: x => x.ClientId,
+                        principalTable: "Clients",
+                        principalColumn: "ClientId",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Packages_Drones_DroneId",
+                        column: x => x.DroneId,
+                        principalTable: "Drones",
+                        principalColumn: "DroneId");
                 });
 
             migrationBuilder.CreateIndex(
@@ -158,25 +165,30 @@ namespace Projekt_NET.Migrations
                 name: "IX_Packages_ClientId",
                 table: "Packages",
                 column: "ClientId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Packages_DroneId",
+                table: "Packages",
+                column: "DroneId");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "Drones");
+                name: "Packages");
 
             migrationBuilder.DropTable(
-                name: "Packages");
+                name: "Clients");
+
+            migrationBuilder.DropTable(
+                name: "Drones");
 
             migrationBuilder.DropTable(
                 name: "DroneClouds");
 
             migrationBuilder.DropTable(
                 name: "Models");
-
-            migrationBuilder.DropTable(
-                name: "Clients");
 
             migrationBuilder.DropTable(
                 name: "Districts");

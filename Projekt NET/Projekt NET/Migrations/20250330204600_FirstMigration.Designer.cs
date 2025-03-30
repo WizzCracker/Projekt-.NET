@@ -12,8 +12,8 @@ using Projekt_NET.Models;
 namespace Projekt_NET.Migrations
 {
     [DbContext(typeof(DroneDbContext))]
-    [Migration("20250323155149_SecondMigration")]
-    partial class SecondMigration
+    [Migration("20250330204600_FirstMigration")]
+    partial class FirstMigration
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -91,6 +91,10 @@ namespace Projekt_NET.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
+                    b.PrimitiveCollection<string>("CurrentCoords")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int>("DroneCloudId")
                         .HasColumnType("int");
 
@@ -100,9 +104,8 @@ namespace Projekt_NET.Migrations
                     b.Property<int>("Range")
                         .HasColumnType("int");
 
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int>("status")
+                        .HasColumnType("int");
 
                     b.HasKey("DroneId");
 
@@ -169,9 +172,8 @@ namespace Projekt_NET.Migrations
                     b.Property<int>("ClientId")
                         .HasColumnType("int");
 
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int?>("DroneId")
+                        .HasColumnType("int");
 
                     b.Property<string>("TargetAddress")
                         .IsRequired()
@@ -180,9 +182,14 @@ namespace Projekt_NET.Migrations
                     b.Property<double?>("Weight")
                         .HasColumnType("float");
 
+                    b.Property<int>("status")
+                        .HasColumnType("int");
+
                     b.HasKey("PackageId");
 
                     b.HasIndex("ClientId");
+
+                    b.HasIndex("DroneId");
 
                     b.ToTable("Packages");
                 });
@@ -236,7 +243,13 @@ namespace Projekt_NET.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("Projekt_NET.Models.Drone", "Drone")
+                        .WithMany()
+                        .HasForeignKey("DroneId");
+
                     b.Navigation("Client");
+
+                    b.Navigation("Drone");
                 });
 
             modelBuilder.Entity("Projekt_NET.Models.Client", b =>

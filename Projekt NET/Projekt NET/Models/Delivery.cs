@@ -10,14 +10,7 @@ namespace Projekt_NET.Models
         public int DeliveryId {  get; set; }
 
         [Required(ErrorMessage = "Enter delivery type")]
-        public enum DelivType
-        {
-            [Display(Name = "Acquisition")]
-            Acquisition = 1,
-
-            [Display(Name = "Dropoff")]
-            Dropoff = 2,
-        }
+        public DelivType Type { get; set; }
 
         [ForeignKey("Package")]
         public int PackageId { get; set; }

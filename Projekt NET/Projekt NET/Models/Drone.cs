@@ -13,20 +13,10 @@ namespace Projekt_NET.Models
         public string CallSign { get; set; }
 
         [Required(ErrorMessage = "Enter drone status")]
-        public enum Status
-        {
-            [Display(Name = "Active")]
-            Active = 1,
-
-            [Display(Name = "Offline")]
-            Offline = 2,
-
-            [Display(Name = "Broken")]
-            Broken = 3
-        }
+        public Status status { get; set; }
 
         [Required]
-        public int[2] CurrentCoords { get; set; }
+        public int[] CurrentCoords { get; set; } = new int[2];
 
         [ForeignKey("Model")]
         [Required(ErrorMessage = "Please enter the drone model")]

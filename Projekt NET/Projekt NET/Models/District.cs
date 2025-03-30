@@ -11,7 +11,7 @@ namespace Projekt_NET.Models
         public string Name { get; set;}
 
         [Required]
-        public float[4] BoundingPoints { get; set; }
+        public float[] BoundingPoints { get; set; } = new float[4];
 
         [Required]
         public List<DroneCloud> DroneClouds { get; set; }

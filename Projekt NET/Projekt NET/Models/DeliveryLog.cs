@@ -16,7 +16,7 @@ namespace Projekt_NET.Models
         public DateTime LogDate { get; set; }
 
         [Required]
-        public string Status { get; set; }
+        public Status status { get; set; }
 
         public string Remarks { get; set; }
     }
