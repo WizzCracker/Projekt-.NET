@@ -27,6 +27,10 @@ namespace Projekt_NET.Controllers
         {
             return RedirectToAction("Index", "Clients");
         }
+        public IActionResult Packages()
+        {
+            return RedirectToAction("Index", "Packages");
+        }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
