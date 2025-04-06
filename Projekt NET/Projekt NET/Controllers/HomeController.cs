@@ -23,6 +23,11 @@ namespace Projekt_NET.Controllers
             return View();
         }
 
+        public IActionResult Clients()
+        {
+            return RedirectToAction("Index", "Clients");
+        }
+
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {
