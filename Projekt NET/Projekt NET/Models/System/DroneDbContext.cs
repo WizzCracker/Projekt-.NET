@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 
-namespace Projekt_NET.Models
+namespace Projekt_NET.Models.System
 {
     public class DroneDbContext : DbContext
     {

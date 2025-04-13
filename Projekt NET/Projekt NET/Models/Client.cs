@@ -16,7 +16,11 @@ namespace Projekt_NET.Models
 
         [Phone(ErrorMessage = "Enter a valid phone number.")]
         public string? PhoneNumber { get; set; }
+        [Required]
+        public string Login { get; set; }
 
+        [Required]
+        public string Password { get; set; }
         public List<Package> Packages { get; set; } = new();
 
         [ForeignKey("District")]
