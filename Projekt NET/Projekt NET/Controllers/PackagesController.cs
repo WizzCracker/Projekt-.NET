@@ -55,16 +55,10 @@ namespace Projekt_NET.Controllers
         {
             ViewData["ClientId"] = new SelectList(_context.Clients, "ClientId", "Name");
             ViewData["DroneId"] = new SelectList(_context.Drones, "DroneId", "CallSign");
-            ViewBag.DroneStatus = Enum.GetValues(typeof(DStatus))
-            .Cast<DStatus>()
-            .Select(e => new SelectListItem
-            {
-                Value = e.ToString(),
-                Text = e.ToString()
-            })
-            .ToList();
+
             return View();
         }
+
 
         // POST: Packages/Create
         // To protect from overposting attacks, enable the specific properties you want to bind to.
@@ -72,7 +66,7 @@ namespace Projekt_NET.Controllers
         [HttpPost]
         [Route("Dodaj")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("PackageId,ClientId,DroneId,Weight,status,TargetAddress")] Package package)
+        public async Task<IActionResult> Create([Bind("PackageId,ClientId,DroneId,Weight,TargetAddress")] Package package)
         {
             if (ModelState.IsValid)
             {
@@ -80,6 +74,7 @@ namespace Projekt_NET.Controllers
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
+
             ViewData["ClientId"] = new SelectList(_context.Clients, "ClientId", "Name", package.ClientId);
             ViewData["DroneId"] = new SelectList(_context.Drones, "DroneId", "CallSign", package.DroneId);
             return View(package);
@@ -110,7 +105,7 @@ namespace Projekt_NET.Controllers
         [HttpPost]
         [Route("Edycja")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("PackageId,ClientId,DroneId,Weight,status,TargetAddress")] Package package)
+        public async Task<IActionResult> Edit(int id, [Bind("PackageId,ClientId,DroneId,Weight,TargetAddress")] Package package)
         {
             if (id != package.PackageId)
             {
