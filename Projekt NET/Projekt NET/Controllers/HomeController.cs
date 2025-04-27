@@ -44,6 +44,7 @@ namespace Projekt_NET.Controllers
         [Route("Account/[action]")]
         public async Task<IActionResult> Login(string login, string password)
         {
+
             if (Request.Method == "GET")
                 return View();
 
@@ -54,7 +55,7 @@ namespace Projekt_NET.Controllers
 
                 await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
 
-                return RedirectToAction(nameof(Index));
+                return RedirectToAction("Index", "Clients");
             }
             else
             {

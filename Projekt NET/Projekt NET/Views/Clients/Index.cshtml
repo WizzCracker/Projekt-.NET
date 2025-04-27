@@ -9,15 +9,6 @@
 <p>
     <a asp-action="Create">Dodaj nowego klienta</a>
 </p>
-<p>
-    <a asp-action="Details(1)">Zobacz szczegóły klienta</a>
-</p>
-<p>
-    <a asp-action="Edit(1)">Edytuj klienta</a>
-</p>
-<p>
-    <a asp-action="Delete(1)">Usuń klienta</a>
-</p>
 <table class="table">
     <thead>
         <tr>
@@ -49,7 +40,7 @@
                 @Html.DisplayFor(modelItem => item.PhoneNumber)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.District.Name)
+                @Html.DisplayFor(modelItem => item.DistrictId)
             </td>
             <td>
                 <a asp-action="Edit" asp-route-id="@item.ClientId">Edit</a> |
