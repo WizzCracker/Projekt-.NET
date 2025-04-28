@@ -9,10 +9,10 @@ namespace Projekt_NET.Models
         public int PackageId { get; set; }
         [ForeignKey("Client")]
         public int ClientId { get; set; }
-        public Client Client { get; set; }
+        public Client? Client { get; set; }
         [ForeignKey("Drone")]
         public int? DroneId { get; set; }
-        public Drone Drone { get; set; }
+        public Drone? Drone { get; set; }
         public double? Weight { get; set; }
         [Required]
         public string TargetAddress { get; set; }

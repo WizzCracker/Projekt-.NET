@@ -134,7 +134,7 @@ namespace Projekt_NET.Controllers
                         throw;
                     }
                 }
-                return RedirectToAction(nameof(Index));
+                return RedirectToAction("Index", "Packages");
             }
             ViewData["ClientId"] = new SelectList(_context.Clients, "ClientId", "Name", package.ClientId);
             ViewData["DroneId"] = new SelectList(_context.Drones, "DroneId", "CallSign", package.DroneId);
