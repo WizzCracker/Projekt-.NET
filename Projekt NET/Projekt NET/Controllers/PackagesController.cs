@@ -85,7 +85,7 @@ namespace Projekt_NET.Controllers
         }
 
         // GET: Packages/Edit/5
-        [Route("Edycja")]
+        [Route("Edycja/{id}")]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -107,7 +107,7 @@ namespace Projekt_NET.Controllers
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
-        [Route("Edycja")]
+        [HttpPost("Edycja/{id}")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("PackageId,ClientId,DroneId,Weight,TargetAddress")] Package package)
         {
@@ -142,7 +142,7 @@ namespace Projekt_NET.Controllers
         }
 
         // GET: Packages/Delete/5
-        [Route("Usun")]
+        [Route("Usun/{id}")]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -163,8 +163,7 @@ namespace Projekt_NET.Controllers
         }
 
         // POST: Packages/Delete/5
-        [HttpPost, ActionName("Delete")]
-        [Route("Usun")]
+        [HttpPost("Usun/{id}")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
