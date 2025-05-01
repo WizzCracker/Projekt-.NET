@@ -39,6 +39,10 @@ namespace Projekt_NET.Controllers
         {
             return RedirectToAction("Index", "Drones");
         }
+        public IActionResult Deliveries()
+        {
+            return RedirectToAction("Index", "Deliveries");
+        }
         public IActionResult Login()
         {
             return View();
