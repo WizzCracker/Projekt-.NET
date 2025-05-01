@@ -16,10 +16,13 @@
                 @Html.DisplayNameFor(model => model.CallSign)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.status)
+                @Html.DisplayNameFor(model => model.Status)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.CurrentCoords)
+                @Html.DisplayNameFor(model => model.CoordX)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.CoordY)
             </th>
             <th>
                 @Html.DisplayNameFor(model => model.Model)
@@ -43,10 +46,13 @@
                 @Html.DisplayFor(modelItem => item.CallSign)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.status)
+                @Html.DisplayFor(modelItem => item.Status)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.CurrentCoords)
+                    @Html.DisplayFor(modelItem => item.CoordX)
+            </td>
+            <td>
+                    @Html.DisplayFor(modelItem => item.CoordY)
             </td>
             <td>
                 @Html.DisplayFor(modelItem => item.Model.Name)

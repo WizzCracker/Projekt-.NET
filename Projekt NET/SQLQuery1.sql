@@ -1,2 +1,2 @@
-﻿Select * From packages;
+﻿Select * From Drones;
 

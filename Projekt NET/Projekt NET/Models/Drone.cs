@@ -13,10 +13,25 @@ namespace Projekt_NET.Models
         public string CallSign { get; set; }
 
         [Required(ErrorMessage = "Enter drone status")]
-        public DStatus status { get; set; }
+        public DStatus Status { get; set; }
 
         [Required]
         public int[] CurrentCoords { get; set; } = new int[2];
+
+        [NotMapped]
+        public int CoordX
+        {
+            get => CurrentCoords.Length > 0 ? CurrentCoords[0] : 0;
+            set => CurrentCoords[0] = value;
+        }
+
+        [NotMapped]
+        public int CoordY
+        {
+            get => CurrentCoords.Length > 1 ? CurrentCoords[1] : 0;
+            set => CurrentCoords[1] = value;
+        }
+
 
         [ForeignKey("Model")]
         [Required(ErrorMessage = "Please enter the drone model")]

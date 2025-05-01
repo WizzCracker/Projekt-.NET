@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
@@ -49,6 +50,7 @@ namespace Projekt_NET.Controllers
         // GET: Drones/Create
         public IActionResult Create()
         {
+            ViewData["StatusList"] = new SelectList(Enum.GetValues(typeof(DStatus)));
             ViewData["DroneCloudId"] = new SelectList(_context.DroneClouds, "DroneCloudId", "DroneCloudId");
             ViewData["ModelId"] = new SelectList(_context.Models, "ModelId", "Name");
             return View();
@@ -59,14 +61,16 @@ namespace Projekt_NET.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("DroneId,CallSign,status,CurrentCoords,ModelId,Range,DroneCloudId,AqDate")] Drone drone)
+        public async Task<IActionResult> Create([Bind("DroneId,CallSign,Status,CoordX,CoordY,ModelId,Range,DroneCloudId,AqDate")] Drone drone)
         {
             if (ModelState.IsValid)
             {
+                drone.CurrentCoords = new int[] { drone.CoordX, drone.CoordY };
                 _context.Add(drone);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
+            ViewData["StatusList"] = new SelectList(Enum.GetValues(typeof(DStatus)));
             ViewData["DroneCloudId"] = new SelectList(_context.DroneClouds, "DroneCloudId", "DroneCloudId", drone.DroneCloudId);
             ViewData["ModelId"] = new SelectList(_context.Models, "ModelId", "Name", drone.ModelId);
             return View(drone);
@@ -85,6 +89,7 @@ namespace Projekt_NET.Controllers
             {
                 return NotFound();
             }
+            ViewData["StatusList"] = new SelectList(Enum.GetValues(typeof(DStatus)));
             ViewData["DroneCloudId"] = new SelectList(_context.DroneClouds, "DroneCloudId", "DroneCloudId", drone.DroneCloudId);
             ViewData["ModelId"] = new SelectList(_context.Models, "ModelId", "Name", drone.ModelId);
             return View(drone);
@@ -95,7 +100,7 @@ namespace Projekt_NET.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("DroneId,CallSign,status,CurrentCoords,ModelId,Range,DroneCloudId,AqDate")] Drone drone)
+        public async Task<IActionResult> Edit(int id, [Bind("DroneId,CallSign,Status,CoordX,CoordY,ModelId,Range,DroneCloudId,AqDate")] Drone drone)
         {
             if (id != drone.DroneId)
             {
@@ -106,6 +111,7 @@ namespace Projekt_NET.Controllers
             {
                 try
                 {
+                    drone.CurrentCoords = new int[] { drone.CoordX, drone.CoordY };
                     _context.Update(drone);
                     await _context.SaveChangesAsync();
                 }
@@ -122,6 +128,7 @@ namespace Projekt_NET.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
+            ViewData["StatusList"] = new SelectList(Enum.GetValues(typeof(DStatus)));
             ViewData["DroneCloudId"] = new SelectList(_context.DroneClouds, "DroneCloudId", "DroneCloudId", drone.DroneCloudId);
             ViewData["ModelId"] = new SelectList(_context.Models, "ModelId", "Name", drone.ModelId);
             return View(drone);

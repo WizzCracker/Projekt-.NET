@@ -19,14 +19,20 @@
                 <span asp-validation-for="CallSign" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="status" class="control-label"></label>
-                <select asp-for="status" class="form-control"></select>
-                <span asp-validation-for="status" class="text-danger"></span>
+                <label asp-for="Status" class="control-label"></label>
+                <select asp-for="Status" asp-items="ViewBag.StatusList" class="form-control"></select>
+                <span asp-validation-for="Status" class="text-danger"></span>
+
             </div>
             <div class="form-group">
-                <label asp-for="CurrentCoords" class="control-label"></label>
-                <input asp-for="CurrentCoords" class="form-control" />
-                <span asp-validation-for="CurrentCoords" class="text-danger"></span>
+                <label for="CoordX" class="control-label">Coord X</label>
+                <input asp-for="CoordX" class="form-control" />
+                <span asp-validation-for="CoordX" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label for="CoordY" class="control-label">Coord Y</label>
+                <input asp-for="CoordY" class="form-control" />
+                <span asp-validation-for="CoordY" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <label asp-for="ModelId" class="control-label"></label>
