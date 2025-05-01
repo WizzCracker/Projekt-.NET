@@ -26,6 +26,6 @@ namespace Projekt_NET.Models
         [ForeignKey("District")]
         public int DistrictId { get; set; }
 
-        public District District { get; set; }
+        public District ?District { get; set; }
     }
 }

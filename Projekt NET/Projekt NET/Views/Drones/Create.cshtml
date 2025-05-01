@@ -1,0 +1,58 @@
+﻿@model Projekt_NET.Models.Drone
+
+@{
+    ViewData["Title"] = "Create";
+}
+
+<h1>Create</h1>
+
+<h4>Drone</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Create">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="form-group">
+                <label asp-for="CallSign" class="control-label"></label>
+                <input asp-for="CallSign" class="form-control" />
+                <span asp-validation-for="CallSign" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="status" class="control-label"></label>
+                <select asp-for="status" class="form-control"></select>
+                <span asp-validation-for="status" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="CurrentCoords" class="control-label"></label>
+                <input asp-for="CurrentCoords" class="form-control" />
+                <span asp-validation-for="CurrentCoords" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="ModelId" class="control-label"></label>
+                <select asp-for="ModelId" class ="form-control" asp-items="ViewBag.ModelId"></select>
+            </div>
+            <div class="form-group">
+                <label asp-for="Range" class="control-label"></label>
+                <input asp-for="Range" class="form-control" />
+                <span asp-validation-for="Range" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="DroneCloudId" class="control-label"></label>
+                <select asp-for="DroneCloudId" class ="form-control" asp-items="ViewBag.DroneCloudId"></select>
+            </div>
+            <div class="form-group">
+                <label asp-for="AqDate" class="control-label"></label>
+                <input asp-for="AqDate" class="form-control" />
+                <span asp-validation-for="AqDate" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Create" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+

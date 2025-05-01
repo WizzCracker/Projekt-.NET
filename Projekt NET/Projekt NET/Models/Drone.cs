@@ -22,7 +22,7 @@ namespace Projekt_NET.Models
         [Required(ErrorMessage = "Please enter the drone model")]
         public int ModelId { get; set; }
 
-        public Model Model {  get; set; }
+        public Model? Model {  get; set; }
 
         [Required(ErrorMessage = "Please enter the drone range")]
         public int Range { get; set; }
@@ -30,7 +30,7 @@ namespace Projekt_NET.Models
         [ForeignKey("DroneCloud")]
         public int DroneCloudId { get; set; }
 
-        public DroneCloud DroneCloud { get; set; }
+        public DroneCloud? DroneCloud { get; set; }
 
         [Display(Name = "Aquisition Date: ")]
         [DataType(DataType.Date)]

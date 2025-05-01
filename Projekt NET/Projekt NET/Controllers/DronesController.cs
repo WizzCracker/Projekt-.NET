@@ -10,23 +10,23 @@ using Projekt_NET.Models.System;
 
 namespace Projekt_NET.Controllers
 {
-    public class ClientsController : Controller
+    public class DronesController : Controller
     {
         private readonly DroneDbContext _context;
 
-        public ClientsController(DroneDbContext context)
+        public DronesController(DroneDbContext context)
         {
             _context = context;
         }
 
-        // GET: Clients
+        // GET: Drones
         public async Task<IActionResult> Index()
         {
-            var droneDbContext = _context.Clients.Include(c => c.District);
+            var droneDbContext = _context.Drones.Include(d => d.DroneCloud).Include(d => d.Model);
             return View(await droneDbContext.ToListAsync());
         }
 
-        // GET: Clients/Details/5
+        // GET: Drones/Details/5
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
@@ -34,42 +34,45 @@ namespace Projekt_NET.Controllers
                 return NotFound();
             }
 
-            var client = await _context.Clients
-                .Include(c => c.District)
-                .FirstOrDefaultAsync(m => m.ClientId == id);
-            if (client == null)
+            var drone = await _context.Drones
+                .Include(d => d.DroneCloud)
+                .Include(d => d.Model)
+                .FirstOrDefaultAsync(m => m.DroneId == id);
+            if (drone == null)
             {
                 return NotFound();
             }
 
-            return View(client);
+            return View(drone);
         }
 
-        // GET: Clients/Create
+        // GET: Drones/Create
         public IActionResult Create()
         {
-            ViewData["DistrictId"] = new SelectList(_context.Districts, "DistrictId", "Name");
+            ViewData["DroneCloudId"] = new SelectList(_context.DroneClouds, "DroneCloudId", "DroneCloudId");
+            ViewData["ModelId"] = new SelectList(_context.Models, "ModelId", "Name");
             return View();
         }
 
-        // POST: Clients/Create
+        // POST: Drones/Create
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("ClientId,Name,Surname,PhoneNumber,Login,Password,DistrictId")] Client client)
+        public async Task<IActionResult> Create([Bind("DroneId,CallSign,status,CurrentCoords,ModelId,Range,DroneCloudId,AqDate")] Drone drone)
         {
             if (ModelState.IsValid)
             {
-                _context.Add(client);
+                _context.Add(drone);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["DistrictId"] = new SelectList(_context.Districts, "DistrictId", "Name", client.DistrictId);
-            return View(client);
+            ViewData["DroneCloudId"] = new SelectList(_context.DroneClouds, "DroneCloudId", "DroneCloudId", drone.DroneCloudId);
+            ViewData["ModelId"] = new SelectList(_context.Models, "ModelId", "Name", drone.ModelId);
+            return View(drone);
         }
 
-        // GET: Clients/Edit/5
+        // GET: Drones/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -77,23 +80,24 @@ namespace Projekt_NET.Controllers
                 return NotFound();
             }
 
-            var client = await _context.Clients.FindAsync(id);
-            if (client == null)
+            var drone = await _context.Drones.FindAsync(id);
+            if (drone == null)
             {
                 return NotFound();
             }
-            ViewData["DistrictId"] = new SelectList(_context.Districts, "DistrictId", "Name", client.DistrictId);
-            return View(client);
+            ViewData["DroneCloudId"] = new SelectList(_context.DroneClouds, "DroneCloudId", "DroneCloudId", drone.DroneCloudId);
+            ViewData["ModelId"] = new SelectList(_context.Models, "ModelId", "Name", drone.ModelId);
+            return View(drone);
         }
 
-        // POST: Clients/Edit/5
+        // POST: Drones/Edit/5
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("ClientId,Name,Surname,PhoneNumber,Login,Password,DistrictId")] Client client)
+        public async Task<IActionResult> Edit(int id, [Bind("DroneId,CallSign,status,CurrentCoords,ModelId,Range,DroneCloudId,AqDate")] Drone drone)
         {
-            if (id != client.ClientId)
+            if (id != drone.DroneId)
             {
                 return NotFound();
             }
@@ -102,12 +106,12 @@ namespace Projekt_NET.Controllers
             {
                 try
                 {
-                    _context.Update(client);
+                    _context.Update(drone);
                     await _context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!ClientExists(client.ClientId))
+                    if (!DroneExists(drone.DroneId))
                     {
                         return NotFound();
                     }
@@ -118,11 +122,12 @@ namespace Projekt_NET.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["DistrictId"] = new SelectList(_context.Districts, "DistrictId", "Name", client.DistrictId);
-            return View(client);
+            ViewData["DroneCloudId"] = new SelectList(_context.DroneClouds, "DroneCloudId", "DroneCloudId", drone.DroneCloudId);
+            ViewData["ModelId"] = new SelectList(_context.Models, "ModelId", "Name", drone.ModelId);
+            return View(drone);
         }
 
-        // GET: Clients/Delete/5
+        // GET: Drones/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -130,35 +135,36 @@ namespace Projekt_NET.Controllers
                 return NotFound();
             }
 
-            var client = await _context.Clients
-                .Include(c => c.District)
-                .FirstOrDefaultAsync(m => m.ClientId == id);
-            if (client == null)
+            var drone = await _context.Drones
+                .Include(d => d.DroneCloud)
+                .Include(d => d.Model)
+                .FirstOrDefaultAsync(m => m.DroneId == id);
+            if (drone == null)
             {
                 return NotFound();
             }
 
-            return View(client);
+            return View(drone);
         }
 
-        // POST: Clients/Delete/5
+        // POST: Drones/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var client = await _context.Clients.FindAsync(id);
-            if (client != null)
+            var drone = await _context.Drones.FindAsync(id);
+            if (drone != null)
             {
-                _context.Clients.Remove(client);
+                _context.Drones.Remove(drone);
             }
 
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
-        private bool ClientExists(int id)
+        private bool DroneExists(int id)
         {
-            return _context.Clients.Any(e => e.ClientId == id);
+            return _context.Drones.Any(e => e.DroneId == id);
         }
     }
 }
