@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using System.Security.Principal;
@@ -25,7 +26,14 @@ namespace Projekt_NET.Models.System
 
         public Client? Validate(string login, string password)
         {
-            return _context.Clients.FirstOrDefault(c => c.Login == login && c.Password == password);
+            var user = _context.Clients.FirstOrDefault(c => c.Login == login);
+            if (user == null)
+                return null;
+
+            var hasher = new PasswordHasher<Client>();
+            var result = hasher.VerifyHashedPassword(user, user.Password, password);
+
+            return result == PasswordVerificationResult.Success ? user : null;
         }
 
         public Client GetUser(string login)
