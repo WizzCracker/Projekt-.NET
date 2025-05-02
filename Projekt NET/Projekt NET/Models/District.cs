@@ -13,11 +13,5 @@ namespace Projekt_NET.Models
         [Required]
         public float[] BoundingPoints { get; set; } = new float[4];
 
-        [Required]
-        public List<DroneCloud> DroneClouds { get; set; }
-
-        [Required]
-        public List<Client> Clients { get; set; }
-
     }
 }

@@ -34,7 +34,6 @@ namespace Projekt_NET.Models
 
 
         [ForeignKey("Model")]
-        [Required(ErrorMessage = "Please enter the drone model")]
         public int ModelId { get; set; }
 
         public Model? Model {  get; set; }
@@ -43,7 +42,7 @@ namespace Projekt_NET.Models
         public int Range { get; set; }
 
         [ForeignKey("DroneCloud")]
-        public int DroneCloudId { get; set; }
+        public int? DroneCloudId { get; set; }
 
         public DroneCloud? DroneCloud { get; set; }
 
