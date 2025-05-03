@@ -9,7 +9,7 @@ namespace Projekt_NET.Models
         [Key]
         public int DroneCloudId {  get; set; }
 
-        public List<Drone> Drones { get; set; }
+        public string Name { get; set; }
 
         [ForeignKey("District")]
         [Required(ErrorMessage = "Please assign the district of operations for the drone cloud")]
