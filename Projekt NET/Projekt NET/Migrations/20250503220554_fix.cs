@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Projekt_NET.Migrations
 {
     /// <inheritdoc />
-    public partial class First : Migration
+    public partial class fix : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -95,15 +95,15 @@ namespace Projekt_NET.Migrations
                 name: "Districts_BoundingPoints",
                 columns: table => new
                 {
-                    DistrictId = table.Column<int>(type: "int", nullable: false),
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Latitude = table.Column<double>(type: "float", nullable: false),
-                    Longitude = table.Column<double>(type: "float", nullable: false)
+                    Longitude = table.Column<double>(type: "float", nullable: false),
+                    DistrictId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Districts_BoundingPoints", x => new { x.DistrictId, x.Id });
+                    table.PrimaryKey("PK_Districts_BoundingPoints", x => x.Id);
                     table.ForeignKey(
                         name: "FK_Districts_BoundingPoints_Districts_DistrictId",
                         column: x => x.DistrictId,
@@ -138,6 +138,7 @@ namespace Projekt_NET.Migrations
                 {
                     DroneCloudId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
+                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     DistrictId = table.Column<int>(type: "int", nullable: false),
                     OperatorId = table.Column<int>(type: "int", nullable: true)
                 },
@@ -161,15 +162,15 @@ namespace Projekt_NET.Migrations
                 name: "Flights_DeliveryCoordinates",
                 columns: table => new
                 {
-                    FlightId = table.Column<int>(type: "int", nullable: false),
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Latitude = table.Column<double>(type: "float", nullable: false),
-                    Longitude = table.Column<double>(type: "float", nullable: false)
+                    Longitude = table.Column<double>(type: "float", nullable: false),
+                    FlightId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Flights_DeliveryCoordinates", x => new { x.FlightId, x.Id });
+                    table.PrimaryKey("PK_Flights_DeliveryCoordinates", x => x.Id);
                     table.ForeignKey(
                         name: "FK_Flights_DeliveryCoordinates_Flights_FlightId",
                         column: x => x.FlightId,
@@ -294,6 +295,11 @@ namespace Projekt_NET.Migrations
                 column: "PackageId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Districts_BoundingPoints_DistrictId",
+                table: "Districts_BoundingPoints",
+                column: "DistrictId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_DroneClouds_DistrictId",
                 table: "DroneClouds",
                 column: "DistrictId");
@@ -317,6 +323,11 @@ namespace Projekt_NET.Migrations
                 name: "IX_Flights_FlightPathId",
                 table: "Flights",
                 column: "FlightPathId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Flights_DeliveryCoordinates_FlightId",
+                table: "Flights_DeliveryCoordinates",
+                column: "FlightId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Packages_ClientId",
