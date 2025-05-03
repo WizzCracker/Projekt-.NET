@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Projekt_NET.Models
 {
@@ -13,7 +14,10 @@ namespace Projekt_NET.Models
         [Phone(ErrorMessage = "Enter a valid phone number.")]
         public string? PhoneNumber { get; set; }
 
-        public List<DroneCloud> ManagedDroneClouds { get; set; }
+        [ForeignKey("DroneCloud")]
+        public int DroneCloudId { get; set; }
+
+        public List<DroneCloud>? DroneClouds { get; set; }
     }
 
 }

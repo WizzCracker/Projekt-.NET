@@ -16,6 +16,6 @@ namespace Projekt_NET.Models
         [Required(ErrorMessage = "Enter max speed")]
         public int MaxSpeed { get; set; }
 
-        public string SpecialGear { get; set; } //Zależny od modelu specjalny sprzęt
+        public string? SpecialGear { get; set; } //Zależny od modelu specjalny sprzęt
     }
 }
