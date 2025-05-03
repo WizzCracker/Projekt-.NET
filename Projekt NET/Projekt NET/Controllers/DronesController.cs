@@ -61,7 +61,7 @@ namespace Projekt_NET.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("DroneId,CallSign,Status,CoordX,CoordY,ModelId,Range,DroneCloudId,AqDate")] Drone drone)
+        public async Task<IActionResult> Create([Bind("DroneId,CallSign,Status,Coordinate,ModelId,Range,DroneCloudId,AqDate")] Drone drone)
         {
             if (ModelState.IsValid)
             {
@@ -99,7 +99,7 @@ namespace Projekt_NET.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("DroneId,CallSign,Status,CoordX,CoordY,ModelId,Range,DroneCloudId,AqDate")] Drone drone)
+        public async Task<IActionResult> Edit(int id, [Bind("DroneId,CallSign,Status,Coordinate,ModelId,Range,DroneCloudId,AqDate")] Drone drone)
         {
             if (id != drone.DroneId)
             {

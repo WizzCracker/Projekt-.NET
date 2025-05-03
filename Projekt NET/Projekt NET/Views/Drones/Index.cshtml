@@ -18,7 +18,13 @@
             <th>
                 @Html.DisplayNameFor(model => model.Status)
             </th>
-            
+            <th>
+                @Html.DisplayNameFor(model => model.Coordinate.Latitude)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Coordinate.Longitude)
+            </th>
+
             <th>
                 @Html.DisplayNameFor(model => model.Model)
             </th>
@@ -43,7 +49,12 @@
             <td>
                 @Html.DisplayFor(modelItem => item.Status)
             </td>
-            
+            <td>
+                @Html.DisplayFor(modelItem => item.Coordinate.Latitude)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Coordinate.Longitude)
+            </td>
             <td>
                 @Html.DisplayFor(modelItem => item.Model.Name)
             </td>

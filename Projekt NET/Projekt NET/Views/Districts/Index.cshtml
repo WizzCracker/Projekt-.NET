@@ -15,6 +15,7 @@
             <th>
                 @Html.DisplayNameFor(model => model.Name)
             </th>
+            <th>Bounding Points</th>
             <th></th>
         </tr>
     </thead>
@@ -24,12 +25,22 @@
             <td>
                 @Html.DisplayFor(modelItem => item.Name)
             </td>
-                <td>
-                    <ul>
-                        <li>Lat: @item.BoundingPoints[0].Latitude, Long: @item.BoundingPoints[0].Longitude</li>
-                        <li>Lat: @item.BoundingPoints[1].Latitude, Long: @item.BoundingPoints[1].Longitude</li>
-                    </ul>
-                </td>
+            <td>
+                <ul>
+                    <li>
+                        <span>Lat: @item.BoundingPoints[0].Latitude, Long: @item.BoundingPoints[0].Longitude</span>
+                    </li>
+                    <li>
+                        <span>Lat: @item.BoundingPoints[1].Latitude, Long: @item.BoundingPoints[1].Longitude</span>
+                    </li>
+                    <li>
+                        <span>Lat: @item.BoundingPoints[2].Latitude, Long: @item.BoundingPoints[2].Longitude</span>
+                    </li>
+                    <li>
+                        <span>Lat: @item.BoundingPoints[3].Latitude, Long: @item.BoundingPoints[3].Longitude</span>
+                    </li>
+                </ul>
+            </td>
             <td>
                 <a asp-action="Edit" asp-route-id="@item.DistrictId">Edit</a> |
                 <a asp-action="Details" asp-route-id="@item.DistrictId">Details</a> |

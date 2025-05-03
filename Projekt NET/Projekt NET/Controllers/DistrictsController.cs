@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Projekt_NET.Models;
 using Projekt_NET.Models.System;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Projekt_NET.Controllers
 {
@@ -99,7 +100,19 @@ namespace Projekt_NET.Controllers
             {
                 try
                 {
-                    _context.Update(district);
+                    var existingDistrict = await _context.Districts
+                        .Include(d => d.BoundingPoints)
+                        .FirstOrDefaultAsync(d => d.DistrictId == id);
+
+                    if (existingDistrict == null)
+                    {
+                        return NotFound();
+                    }
+
+                    existingDistrict.Name = district.Name;
+                    existingDistrict.BoundingPoints = district.BoundingPoints;
+
+                    _context.Update(existingDistrict);
                     await _context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
@@ -114,6 +127,10 @@ namespace Projekt_NET.Controllers
                     }
                 }
                 return RedirectToAction(nameof(Index));
+            }
+            foreach (var error in ModelState.Values.SelectMany(v => v.Errors))
+            {
+                Console.WriteLine($"Error: {error.ErrorMessage}");
             }
             return View(district);
         }

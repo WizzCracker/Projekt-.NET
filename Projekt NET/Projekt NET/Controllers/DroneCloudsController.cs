@@ -59,7 +59,6 @@ namespace Projekt_NET.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("DroneCloudId,DistrictId")] DroneCloud droneCloud)
         {
-            droneCloud.Drones = new List<Drone>();
             if (ModelState.IsValid)
             {
                 _context.Add(droneCloud);
