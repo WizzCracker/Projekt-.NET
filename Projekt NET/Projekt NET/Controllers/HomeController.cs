@@ -63,6 +63,10 @@ namespace Projekt_NET.Controllers
         {
             return RedirectToAction("Index", "Clients");
         }
+        public IActionResult Map()
+        {
+            return RedirectToAction("Index", "Map");
+        }
         public IActionResult Login()
         {
             return View();
