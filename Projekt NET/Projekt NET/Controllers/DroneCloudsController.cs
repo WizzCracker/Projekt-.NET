@@ -57,7 +57,7 @@ namespace Projekt_NET.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("DroneCloudId,DistrictId")] DroneCloud droneCloud)
+        public async Task<IActionResult> Create([Bind("DroneCloudId,Name,DistrictId")] DroneCloud droneCloud)
         {
             if (ModelState.IsValid)
             {
@@ -91,7 +91,7 @@ namespace Projekt_NET.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("DroneCloudId,DistrictId")] DroneCloud droneCloud)
+        public async Task<IActionResult> Edit(int id, [Bind("DroneCloudId,Name,DistrictId")] DroneCloud droneCloud)
         {
             if (id != droneCloud.DroneCloudId)
             {
