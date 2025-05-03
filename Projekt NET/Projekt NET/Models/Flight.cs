@@ -19,6 +19,6 @@ namespace Projekt_NET.Models
         public DateTime ArrivDate { get; set; }
 
         [Required]
-        public int[] DeliveryCoordinates { get; set; } = new int[2];
+        public List<Coordinate> DeliveryCoordinates { get; set; } = new();
     }
 }

@@ -18,9 +18,18 @@
                 <span asp-validation-for="Name" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="BoundingPoints" class="control-label"></label>
-                <input asp-for="BoundingPoints" class="form-control" />
-                <span asp-validation-for="BoundingPoints" class="text-danger"></span>
+                <label>Coordinate 1 (Latitude, Longitude)</label>
+                <div class="coordinate-item">
+                    <input type="text" name="BoundingPoints[0].Latitude" placeholder="Latitude 1" class="form-control" />
+                    <input type="text" name="BoundingPoints[0].Longitude" placeholder="Longitude 1" class="form-control" />
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Coordinate 2 (Latitude, Longitude)</label>
+                <div class="coordinate-item">
+                    <input type="text" name="BoundingPoints[1].Latitude" placeholder="Latitude 2" class="form-control" />
+                    <input type="text" name="BoundingPoints[1].Longitude" placeholder="Longitude 2" class="form-control" />
+                </div>
             </div>
             <div class="form-group">
                 <input type="submit" value="Create" class="btn btn-primary" />
@@ -32,4 +41,3 @@
 <div>
     <a asp-action="Index">Back to List</a>
 </div>
-

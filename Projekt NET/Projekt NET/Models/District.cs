@@ -11,7 +11,7 @@ namespace Projekt_NET.Models
         public string Name { get; set;}
 
         [Required]
-        public float[] BoundingPoints { get; set; } = new float[4];
+        public List<Coordinate> BoundingPoints { get; set; } = new();
 
     }
 }

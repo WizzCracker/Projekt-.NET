@@ -77,7 +77,7 @@ namespace Projekt_NET.Migrations
 
                     b.HasIndex("PackageId");
 
-                    b.ToTable("Delivery");
+                    b.ToTable("Deliveries");
                 });
 
             modelBuilder.Entity("Projekt_NET.Models.DeliveryLog", b =>
@@ -116,10 +116,6 @@ namespace Projekt_NET.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("DistrictId"));
 
-                    b.PrimitiveCollection<string>("BoundingPoints")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -144,10 +140,6 @@ namespace Projekt_NET.Migrations
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
-
-                    b.PrimitiveCollection<string>("CurrentCoords")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int?>("DroneCloudId")
                         .HasColumnType("int");
@@ -203,10 +195,6 @@ namespace Projekt_NET.Migrations
 
                     b.Property<DateTime>("ArrivDate")
                         .HasColumnType("datetime2");
-
-                    b.PrimitiveCollection<string>("DeliveryCoordinates")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("DepDate")
                         .HasColumnType("datetime2");
@@ -346,6 +334,36 @@ namespace Projekt_NET.Migrations
                     b.Navigation("Package");
                 });
 
+            modelBuilder.Entity("Projekt_NET.Models.District", b =>
+                {
+                    b.OwnsMany("Projekt_NET.Models.Coordinate", "BoundingPoints", b1 =>
+                        {
+                            b1.Property<int>("DistrictId")
+                                .HasColumnType("int");
+
+                            b1.Property<int>("Id")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("int");
+
+                            SqlServerPropertyBuilderExtensions.UseIdentityColumn(b1.Property<int>("Id"));
+
+                            b1.Property<double>("Latitude")
+                                .HasColumnType("float");
+
+                            b1.Property<double>("Longitude")
+                                .HasColumnType("float");
+
+                            b1.HasKey("DistrictId", "Id");
+
+                            b1.ToTable("Districts_BoundingPoints");
+
+                            b1.WithOwner()
+                                .HasForeignKey("DistrictId");
+                        });
+
+                    b.Navigation("BoundingPoints");
+                });
+
             modelBuilder.Entity("Projekt_NET.Models.Drone", b =>
                 {
                     b.HasOne("Projekt_NET.Models.DroneCloud", "DroneCloud")
@@ -356,6 +374,28 @@ namespace Projekt_NET.Migrations
                         .WithMany()
                         .HasForeignKey("ModelId")
                         .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.OwnsOne("Projekt_NET.Models.Coordinate", "Coordinate", b1 =>
+                        {
+                            b1.Property<int>("DroneId")
+                                .HasColumnType("int");
+
+                            b1.Property<double>("Latitude")
+                                .HasColumnType("float");
+
+                            b1.Property<double>("Longitude")
+                                .HasColumnType("float");
+
+                            b1.HasKey("DroneId");
+
+                            b1.ToTable("Drones");
+
+                            b1.WithOwner()
+                                .HasForeignKey("DroneId");
+                        });
+
+                    b.Navigation("Coordinate")
                         .IsRequired();
 
                     b.Navigation("DroneCloud");
@@ -383,6 +423,33 @@ namespace Projekt_NET.Migrations
                     b.HasOne("Projekt_NET.Models.FlightPath", null)
                         .WithMany("FlightList")
                         .HasForeignKey("FlightPathId");
+
+                    b.OwnsMany("Projekt_NET.Models.Coordinate", "DeliveryCoordinates", b1 =>
+                        {
+                            b1.Property<int>("FlightId")
+                                .HasColumnType("int");
+
+                            b1.Property<int>("Id")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("int");
+
+                            SqlServerPropertyBuilderExtensions.UseIdentityColumn(b1.Property<int>("Id"));
+
+                            b1.Property<double>("Latitude")
+                                .HasColumnType("float");
+
+                            b1.Property<double>("Longitude")
+                                .HasColumnType("float");
+
+                            b1.HasKey("FlightId", "Id");
+
+                            b1.ToTable("Flights_DeliveryCoordinates");
+
+                            b1.WithOwner()
+                                .HasForeignKey("FlightId");
+                        });
+
+                    b.Navigation("DeliveryCoordinates");
                 });
 
             modelBuilder.Entity("Projekt_NET.Models.Package", b =>

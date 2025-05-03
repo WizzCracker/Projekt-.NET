@@ -58,6 +58,8 @@ namespace Projekt_NET.Controllers
         {
             if (ModelState.IsValid)
             {
+
+             
                 _context.Add(district);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));

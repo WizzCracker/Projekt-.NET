@@ -22,7 +22,15 @@ namespace Projekt_NET.Models.System
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+
+            modelBuilder.Entity<Drone>()
+            .OwnsOne(d => d.Coordinate);
+
+            modelBuilder.Entity<District>()
+                .OwnsMany(d => d.BoundingPoints);
+
+            modelBuilder.Entity<Flight>()
+                .OwnsMany(f => f.DeliveryCoordinates);
         }
-        public DbSet<Projekt_NET.Models.Delivery> Delivery { get; set; } = default!;
     }
 }

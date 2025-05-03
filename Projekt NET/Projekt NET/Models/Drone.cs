@@ -15,23 +15,7 @@ namespace Projekt_NET.Models
         [Required(ErrorMessage = "Enter drone status")]
         public DStatus Status { get; set; }
 
-        [Required]
-        public int[] CurrentCoords { get; set; } = new int[2];
-
-        [NotMapped]
-        public int CoordX
-        {
-            get => CurrentCoords.Length > 0 ? CurrentCoords[0] : 0;
-            set => CurrentCoords[0] = value;
-        }
-
-        [NotMapped]
-        public int CoordY
-        {
-            get => CurrentCoords.Length > 1 ? CurrentCoords[1] : 0;
-            set => CurrentCoords[1] = value;
-        }
-
+        public Coordinate Coordinate { get; set; }
 
         [ForeignKey("Model")]
         public int ModelId { get; set; }

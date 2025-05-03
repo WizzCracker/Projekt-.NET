@@ -65,7 +65,6 @@ namespace Projekt_NET.Controllers
         {
             if (ModelState.IsValid)
             {
-                drone.CurrentCoords = new int[] { drone.CoordX, drone.CoordY };
                 _context.Add(drone);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
@@ -111,7 +110,6 @@ namespace Projekt_NET.Controllers
             {
                 try
                 {
-                    drone.CurrentCoords = new int[] { drone.CoordX, drone.CoordY };
                     _context.Update(drone);
                     await _context.SaveChangesAsync();
                 }

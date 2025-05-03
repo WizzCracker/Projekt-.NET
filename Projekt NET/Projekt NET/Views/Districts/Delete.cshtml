@@ -17,11 +17,14 @@
         <dd class = "col-sm-10">
             @Html.DisplayFor(model => model.Name)
         </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.BoundingPoints)
+        <dt class="col-sm-2">
+            Bounding Points
         </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.BoundingPoints)
+        <dd class="col-sm-10">
+            <ul>
+                <li>Lat: @Model.BoundingPoints[0].Latitude, Long: @Model.BoundingPoints[0].Longitude</li>
+                <li>Lat: @Model.BoundingPoints[1].Latitude, Long: @Model.BoundingPoints[1].Longitude</li>
+            </ul>
         </dd>
     </dl>
     

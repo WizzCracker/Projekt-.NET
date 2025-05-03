@@ -22,7 +22,7 @@ namespace Projekt_NET.Controllers
         // GET: Deliveries
         public async Task<IActionResult> Index()
         {
-            var droneDbContext = _context.Delivery.Include(d => d.Package);
+            var droneDbContext = _context.Deliveries.Include(d => d.Package);
             return View(await droneDbContext.ToListAsync());
         }
 
@@ -34,7 +34,7 @@ namespace Projekt_NET.Controllers
                 return NotFound();
             }
 
-            var delivery = await _context.Delivery
+            var delivery = await _context.Deliveries
                 .Include(d => d.Package)
                 .FirstOrDefaultAsync(m => m.DeliveryId == id);
             if (delivery == null)
@@ -79,7 +79,7 @@ namespace Projekt_NET.Controllers
                 return NotFound();
             }
 
-            var delivery = await _context.Delivery.FindAsync(id);
+            var delivery = await _context.Deliveries.FindAsync(id);
             if (delivery == null)
             {
                 return NotFound();
@@ -134,7 +134,7 @@ namespace Projekt_NET.Controllers
                 return NotFound();
             }
 
-            var delivery = await _context.Delivery
+            var delivery = await _context.Deliveries
                 .Include(d => d.Package)
                 .FirstOrDefaultAsync(m => m.DeliveryId == id);
             if (delivery == null)
@@ -150,10 +150,10 @@ namespace Projekt_NET.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var delivery = await _context.Delivery.FindAsync(id);
+            var delivery = await _context.Deliveries.FindAsync(id);
             if (delivery != null)
             {
-                _context.Delivery.Remove(delivery);
+                _context.Deliveries.Remove(delivery);
             }
 
             await _context.SaveChangesAsync();
@@ -162,7 +162,7 @@ namespace Projekt_NET.Controllers
 
         private bool DeliveryExists(int id)
         {
-            return _context.Delivery.Any(e => e.DeliveryId == id);
+            return _context.Deliveries.Any(e => e.DeliveryId == id);
         }
     }
 }
