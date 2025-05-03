@@ -70,6 +70,26 @@ namespace Projekt_NET.Controllers
         {
             if (ModelState.IsValid)
             {
+                var drone = await _context.Drones
+                    .Include(d => d.Model)
+                    .FirstOrDefaultAsync(d => d.DroneId == package.DroneId);
+
+                if (drone == null || drone.Model == null)
+                {
+                    ModelState.AddModelError("", "Invalid drone or drone model.");
+                    ViewData["ClientId"] = new SelectList(_context.Clients, "ClientId", "Name", package.ClientId);
+                    ViewData["DroneId"] = new SelectList(_context.Drones, "DroneId", "CallSign", package.DroneId);
+                    return View(package);
+                }
+
+                if (package.Weight > drone.Model.MaxCapacity)
+                {
+                    ModelState.AddModelError("Weight", $"The package weight exceeds the drone's maximum carry capacity of {drone.Model.MaxCapacity}.");
+                    ViewData["ClientId"] = new SelectList(_context.Clients, "ClientId", "Name", package.ClientId);
+                    ViewData["DroneId"] = new SelectList(_context.Drones, "DroneId", "CallSign", package.DroneId);
+                    return View(package);
+                }
+
                 _context.Add(package);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
@@ -117,6 +137,25 @@ namespace Projekt_NET.Controllers
 
             if (ModelState.IsValid)
             {
+                var drone = await _context.Drones
+                    .Include(d => d.Model)
+                    .FirstOrDefaultAsync(d => d.DroneId == package.DroneId);
+
+                if (drone == null || drone.Model == null)
+                {
+                    ModelState.AddModelError("", "Invalid drone or drone model.");
+                    ViewData["ClientId"] = new SelectList(_context.Clients, "ClientId", "Name", package.ClientId);
+                    ViewData["DroneId"] = new SelectList(_context.Drones, "DroneId", "CallSign", package.DroneId);
+                    return View(package);
+                }
+
+                if (package.Weight > drone.Model.MaxCapacity)
+                {
+                    ModelState.AddModelError("Weight", $"The package weight exceeds the drone's maximum carry capacity of {drone.Model.MaxCapacity}.");
+                    ViewData["ClientId"] = new SelectList(_context.Clients, "ClientId", "Name", package.ClientId);
+                    ViewData["DroneId"] = new SelectList(_context.Drones, "DroneId", "CallSign", package.DroneId);
+                    return View(package);
+                }
                 try
                 {
                     _context.Update(package);
