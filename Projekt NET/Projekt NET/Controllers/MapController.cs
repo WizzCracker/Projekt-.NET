@@ -28,8 +28,8 @@ public class MapController : Controller
 
         var result = drones.Select(d => new
         {
-            lat = d.CoordY,
-            lng = d.CoordX,
+            lat = d.Coordinate.Latitude,
+            lng = d.Coordinate.Longitude,
             popup = $@"
             <strong>{d.CallSign}</strong><br>
             Status: {d.Status}<br>
