@@ -51,10 +51,19 @@ namespace Projekt_NET.Controllers
         public IActionResult Create()
         {
             ViewData["StatusList"] = new SelectList(Enum.GetValues(typeof(DStatus)));
-            ViewData["DroneCloudId"] = new SelectList(_context.DroneClouds, "DroneCloudId", "DroneCloudId");
+
+            var droneClouds = _context.DroneClouds
+                .Select(dc => new { DroneCloudId = (int?)dc.DroneCloudId, Name = dc.DroneCloudId.ToString() })
+                .ToList();
+
+            droneClouds.Insert(0, new { DroneCloudId = (int?)null, Name = "Unassigned" });
+
+            ViewData["DroneCloudId"] = new SelectList(droneClouds, "DroneCloudId", "Name");
+
             ViewData["ModelId"] = new SelectList(_context.Models, "ModelId", "Name");
             return View();
         }
+
 
         // POST: Drones/Create
         // To protect from overposting attacks, enable the specific properties you want to bind to.
@@ -69,11 +78,21 @@ namespace Projekt_NET.Controllers
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
+
             ViewData["StatusList"] = new SelectList(Enum.GetValues(typeof(DStatus)));
-            ViewData["DroneCloudId"] = new SelectList(_context.DroneClouds, "DroneCloudId", "DroneCloudId", drone.DroneCloudId);
+
+            var droneClouds = _context.DroneClouds
+                .Select(dc => new { DroneCloudId = (int?)dc.DroneCloudId, Name = dc.DroneCloudId.ToString() })
+                .ToList();
+
+            droneClouds.Insert(0, new { DroneCloudId = (int?)null, Name = "Unassigned" });
+
+            ViewData["DroneCloudId"] = new SelectList(droneClouds, "DroneCloudId", "Name", drone.DroneCloudId);
+
             ViewData["ModelId"] = new SelectList(_context.Models, "ModelId", "Name", drone.ModelId);
             return View(drone);
         }
+
 
         // GET: Drones/Edit/5
         public async Task<IActionResult> Edit(int? id)
