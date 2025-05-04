@@ -23,9 +23,6 @@ namespace Projekt_NET.Models
         public string Password { get; set; }
         public List<Package> Packages { get; set; } = new();
 
-        [ForeignKey("District")]
-        public int DistrictId { get; set; }
-
         public District ?District { get; set; }
 
         public string Role { get; set; } = "User";

@@ -71,7 +71,6 @@ namespace Projekt_NET.Controllers
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["DistrictId"] = new SelectList(_context.Districts, "DistrictId", "Name", client.DistrictId);
             return View(client);
         }
 
@@ -88,7 +87,6 @@ namespace Projekt_NET.Controllers
             {
                 return NotFound();
             }
-            ViewData["DistrictId"] = new SelectList(_context.Districts, "DistrictId", "Name", client.DistrictId);
             return View(client);
         }
 
@@ -124,7 +122,6 @@ namespace Projekt_NET.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["DistrictId"] = new SelectList(_context.Districts, "DistrictId", "Name", client.DistrictId);
             return View(client);
         }
 
