@@ -1,9 +1,11 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Projekt_NET.Models; 
 using Projekt_NET.Models.System;
 using Projekt_NET.Services;
 
+[Authorize]
 public class MapController : Controller
 {
     private readonly DroneDbContext _context;

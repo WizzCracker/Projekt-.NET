@@ -27,5 +27,7 @@ namespace Projekt_NET.Models
         public int DistrictId { get; set; }
 
         public District ?District { get; set; }
+
+        public string Role { get; set; } = "User";
     }
 }

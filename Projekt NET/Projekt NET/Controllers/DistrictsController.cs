@@ -8,9 +8,11 @@ using Microsoft.EntityFrameworkCore;
 using Projekt_NET.Models;
 using Projekt_NET.Models.System;
 using static System.Runtime.InteropServices.JavaScript.JSType;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Projekt_NET.Controllers
 {
+    [Authorize(Roles = "Admin")]
     public class DistrictsController : Controller
     {
         private readonly DroneDbContext _context;

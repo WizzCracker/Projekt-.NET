@@ -7,9 +7,11 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Projekt_NET.Models;
 using Projekt_NET.Models.System;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Projekt_NET.Controllers
 {
+    [Authorize(Roles = "Admin")]
     public class ModelsController : Controller
     {
         private readonly DroneDbContext _context;

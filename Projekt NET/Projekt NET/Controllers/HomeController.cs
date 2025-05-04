@@ -6,6 +6,7 @@ using Projekt_NET.Models.System;
 using System.Diagnostics;
 using System.Security.Claims;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Projekt_NET.Controllers
 {
@@ -31,34 +32,46 @@ namespace Projekt_NET.Controllers
         {
             return View();
         }
+        public IActionResult CRUD()
+        {
+            return View();
+        }
+        [Authorize(Roles = "Admin")]
         public IActionResult Packages()
         {
             return RedirectToAction("Index", "Packages");
         }
+        [Authorize(Roles = "Admin")]
         public IActionResult Drones()
         {
             return RedirectToAction("Index", "Drones");
         }
+        [Authorize(Roles = "Admin")]
         public IActionResult Deliveries()
         {
             return RedirectToAction("Index", "Deliveries");
         }
+        [Authorize(Roles = "Admin")]
         public IActionResult Districts()
         {
             return RedirectToAction("Index", "Districts");
         }
+        [Authorize(Roles = "Admin")]
         public IActionResult DroneClouds()
         {
             return RedirectToAction("Index", "DroneClouds");
         }
+        [Authorize(Roles = "Admin")]
         public IActionResult Operators()
         {
             return RedirectToAction("Index", "Operators");
         }
+        [Authorize(Roles = "Admin")]
         public IActionResult Models()
         {
             return RedirectToAction("Index", "Models");
         }
+        [Authorize(Roles = "Admin")]
         public IActionResult Clients()
         {
             return RedirectToAction("Index", "Clients");
@@ -66,6 +79,10 @@ namespace Projekt_NET.Controllers
         public IActionResult Map()
         {
             return RedirectToAction("Index", "Map");
+        }
+        public IActionResult MapWeather()
+        {
+            return RedirectToAction("Weather", "Map");
         }
         public IActionResult Login()
         {
@@ -86,7 +103,7 @@ namespace Projekt_NET.Controllers
 
                 await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
 
-                return RedirectToAction("Index", "Clients");
+                return RedirectToAction("Index", "Home");
             }
             else
             {
@@ -95,7 +112,12 @@ namespace Projekt_NET.Controllers
             }
         }
 
-
+        [HttpPost]
+        public async Task<IActionResult> Logout()
+        {
+            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            return RedirectToAction("Index", "Home");
+        }
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {

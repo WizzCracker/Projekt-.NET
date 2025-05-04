@@ -2,59 +2,42 @@
     ViewData["Title"] = "Home Page";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div style="position: absolute; top: 15px; right: 20px;">
+    @if (User.Identity.IsAuthenticated)
+    {
+        <form asp-controller="Home" asp-action="Logout" method="post" style="display:inline;">
+            <button type="submit" class="btn btn-outline-danger">Wyloguj</button>
+        </form>
+    }
+    else
+    {
+        <a asp-controller="Home" asp-action="Login" class="btn btn-outline-primary">
+            Logowanie
+        </a>
+    }
 </div>
 
-<p>
-    <a asp-controller="Home" asp-action="Packages" class="btn btn-primary">
-        Przejdź do listy paczek
-    </a>
-</p>
+<div class="text-center">
+    <h1 class="display-4">Drone swarm delivery</h1>
+</div>
 
-<p>
-    <a asp-controller="Home" asp-action="Drones" class="btn btn-primary">
-        Przejdź do listy dronów
-    </a>
-</p>
+@if (User.IsInRole("Admin"))
+{
+    <p>
+        <a asp-controller="Home" asp-action="CRUD" class="btn btn-primary">
+            Przejdź do listy CRUD.
+        </a>
+    </p>
+}
 
-<p>
-    <a asp-controller="Home" asp-action="Deliveries" class="btn btn-primary">
-        Przejdź do listy przesyłek
-    </a>
-</p>
-<p>
-    <a asp-controller="Home" asp-action="Districts" class="btn btn-primary">
-        Przejdź do listy dystryktów
-    </a>
-</p>
-<p>
-    <a asp-controller="Home" asp-action="DroneClouds" class="btn btn-primary">
-        Przejdź do listy chmur dronów
-    </a>
-</p>
-<p>
-    <a asp-controller="Home" asp-action="Operators" class="btn btn-primary">
-        Przejdź do listy operatorów
-    </a>
-</p>
-<p>
-    <a asp-controller="Home" asp-action="Models" class="btn btn-primary">
-        Przejdź do listy modeli
-    </a>
-</p>
-<p>
-    <a asp-controller="Home" asp-action="Clients" class="btn btn-primary">
-        Przejdź do listy klientów
-    </a>
-</p>
 <p>
     <a asp-controller="Home" asp-action="Map" class="btn btn-primary">
         Przejdź do mapy
     </a>
+</p>
+
 <p>
-    <a asp-controller="Home" asp-action="Login" class="btn btn-primary">
-        Logowanie
+    <a asp-controller="Home" asp-action="MapWeather" class="btn btn-primary">
+        Przejdź do mapy z pogodą
     </a>
 </p>
