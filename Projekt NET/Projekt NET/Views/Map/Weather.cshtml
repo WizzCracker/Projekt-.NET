@@ -9,12 +9,42 @@
 
 <style>
     #map {
+        position: relative; 
         height: 600px;
         width: 100%;
     }
+
+    .layer-controls {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        background: rgba(255, 255, 255, 0.9);
+        padding: 10px;
+        border-radius: 8px;
+        font-family: sans-serif;
+        z-index: 1000;
+    }
+
+        .layer-controls label {
+            display: block;
+            margin-bottom: 5px;
+        }
 </style>
 
-<div id="map"></div>
+<div id="map">
+    <div class="layer-controls">
+        <label>
+            <input type="checkbox" id="windCheckbox" checked>
+            Wind Layer
+        </label>
+        <label>
+            <input type="checkbox" id="precCheckbox" checked>
+            Precipitation Layer
+        </label>
+    </div>
+</div>
+
+
 
 <script src="~/js/map-config.js"></script>
 
@@ -28,7 +58,7 @@
             [49.0, 14.0],
             [55.0, 24.2]
         ],
-        maxBoundsViscosity: 1.0
+        maxBoundsViscosity: 0.7
     }).setView([52.237, 21.017], 6);
     map.setMinZoom(7);
 
@@ -36,15 +66,23 @@
         attribution: '© OpenStreetMap contributors'
     }).addTo(map);
 
-    L.tileLayer(`https://tile.openweathermap.org/map/wind_new/{z}/{x}/{y}.png?appid=${openWeatherApiKey}`, {
+    var windLayer = L.tileLayer(`https://tile.openweathermap.org/map/wind_new/{z}/{x}/{y}.png?appid=${openWeatherApiKey}`, {
         attribution: '&copy; OpenWeatherMap',
         opacity: 1
     }).addTo(map);
 
-    L.tileLayer(`https://tile.openweathermap.org/map/precipitation_new/{z}/{x}/{y}.png?appid=${openWeatherApiKey}`, {
+    var precLayer = L.tileLayer(`https://tile.openweathermap.org/map/precipitation_new/{z}/{x}/{y}.png?appid=${openWeatherApiKey}`, {
         attribution: '&copy; OpenWeatherMap',
         opacity: 1
     }).addTo(map);
+
+    document.getElementById('windCheckbox').addEventListener('change', function () {
+        this.checked ? windLayer.addTo(map) : map.removeLayer(windLayer);
+    });
+
+    document.getElementById('precCheckbox').addEventListener('change', function () {
+        this.checked ? precLayer.addTo(map) : map.removeLayer(precLayer);
+    });
 
     fetch('/Map/GetDroneData')
         .then(res => res.json())
