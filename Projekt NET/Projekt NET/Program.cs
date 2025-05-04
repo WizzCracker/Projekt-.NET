@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using Projekt_NET.Models.System;
+using Projekt_NET.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,6 +20,8 @@ builder.Services.AddAuthorization();
 builder.Services.AddTransient<AuthService>();
 var connectionString = builder.Configuration.GetConnectionString("DRONES");
 builder.Services.AddDbContext<DroneDbContext>(x => x.UseSqlServer(connectionString));
+builder.Services.AddSingleton<WeatherService>();
+
 
 var app = builder.Build();
 

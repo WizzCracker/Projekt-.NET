@@ -21,8 +21,8 @@
 <script>
     const map = L.map('map', {
         maxBounds: [
-            [49.0, 14.0],   
-            [55.0, 24.2]    
+            [49.0, 14.0],
+            [55.0, 24.2]
         ],
         maxBoundsViscosity: 1.0
     }).setView([52.237, 21.017], 6);
@@ -32,14 +32,22 @@
         attribution: '© OpenStreetMap contributors'
     }).addTo(map);
 
+    L.tileLayer(`https://tile.openweathermap.org/map/wind_new/{z}/{x}/{y}.png?appid=699ba7263a2d7855c6b6d78c13f2c076`, {
+        attribution: '&copy; OpenWeatherMap',
+        opacity: 1
+    }).addTo(map);
+
+    L.tileLayer(`https://tile.openweathermap.org/map/precipitation_new/{z}/{x}/{y}.png?appid=699ba7263a2d7855c6b6d78c13f2c076`, {
+        attribution: '&copy; OpenWeatherMap',
+        opacity: 1
+    }).addTo(map);
+
     fetch('/Map/GetDroneData')
         .then(res => res.json())
         .then(data => {
             data.markers.forEach(marker => {
-                const icon = marker.isGrounded ? groundedDroneIcon : droneIcon;
-
                 L.marker([marker.lat, marker.lng], {
-                    icon: icon
+                    icon: droneIcon
                 }).addTo(map)
                     .bindPopup(marker.popup);
             });
@@ -55,21 +63,8 @@
             (hash >> 8 & 0xFF).toString(16)).padEnd(6, '0');
         return color.slice(0, 7);
     }
+    
 
-    fetch('/Map/GetDistrictData')
-        .then(res => res.json())
-        .then(data => {
-            data.forEach(district => {
-                const polygon = L.polygon(district.boundaries, {
-                    color: stringToColor(district.name),
-                    fillColor: stringToColor(district.name),
-                    fillOpacity: 0.1,
-                    weight: 2
-                }).addTo(map);
-
-                polygon.bindPopup(`<strong>District:</strong> ${district.name}`);
-            });
-        });
+    
 
 </script>
-
