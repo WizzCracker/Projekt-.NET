@@ -11,7 +11,9 @@ namespace Projekt_NET.Services
         public WeatherService(IConfiguration config)
         {
             _httpClient = new HttpClient();
-            _apiKey = config["OpenWeather:ApiKey"];
+            _apiKey = config["OPENWEATHERMAP_API_KEY"]
+            ?? throw new InvalidOperationException("Brak klucza API w zmiennej środowiskowej");
+            Console.WriteLine(_apiKey);
         }
 
         public async Task<WeatherData?> GetWeatherAsync(double lat, double lon)

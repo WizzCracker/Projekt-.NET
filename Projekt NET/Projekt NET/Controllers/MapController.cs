@@ -17,11 +17,15 @@ public class MapController : Controller
 
     public IActionResult Index()
     {
+        var apiKey = Environment.GetEnvironmentVariable("OPENWEATHERMAP_API_KEY");
+        ViewBag.OpenWeatherApiKey = apiKey;
         return View();
     }
 
     public IActionResult Weather()
     {
+        var apiKey = Environment.GetEnvironmentVariable("OPENWEATHERMAP_API_KEY");
+        ViewBag.OpenWeatherApiKey = apiKey;
         return View();
     }
 

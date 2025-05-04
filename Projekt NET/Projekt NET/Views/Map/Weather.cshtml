@@ -19,6 +19,10 @@
 <script src="~/js/map-config.js"></script>
 
 <script>
+    const openWeatherApiKey = '@ViewBag.OpenWeatherApiKey';
+</script>
+
+<script>
     const map = L.map('map', {
         maxBounds: [
             [49.0, 14.0],
@@ -32,12 +36,12 @@
         attribution: '© OpenStreetMap contributors'
     }).addTo(map);
 
-    L.tileLayer(`https://tile.openweathermap.org/map/wind_new/{z}/{x}/{y}.png?appid=699ba7263a2d7855c6b6d78c13f2c076`, {
+    L.tileLayer(`https://tile.openweathermap.org/map/wind_new/{z}/{x}/{y}.png?appid=${openWeatherApiKey}`, {
         attribution: '&copy; OpenWeatherMap',
         opacity: 1
     }).addTo(map);
 
-    L.tileLayer(`https://tile.openweathermap.org/map/precipitation_new/{z}/{x}/{y}.png?appid=699ba7263a2d7855c6b6d78c13f2c076`, {
+    L.tileLayer(`https://tile.openweathermap.org/map/precipitation_new/{z}/{x}/{y}.png?appid=${openWeatherApiKey}`, {
         attribution: '&copy; OpenWeatherMap',
         opacity: 1
     }).addTo(map);
