@@ -84,18 +84,18 @@ namespace Projekt_NET.Controllers
         {
             return RedirectToAction("Weather", "Map");
         }
-        public IActionResult Login()
+
+        [Route("Account/[action]")]
+        [HttpGet]
+        public async Task<IActionResult> Login()
         {
-            return View();
+                return View();
         }
 
         [Route("Account/[action]")]
+        [HttpPost]
         public async Task<IActionResult> Login(string login, string password)
         {
-
-            if (Request.Method == "GET")
-                return View();
-
             if (_authService.Validate(login, password) != null)
             {
                 var claims = _authService.GetClaims(_authService.GetUser(login));

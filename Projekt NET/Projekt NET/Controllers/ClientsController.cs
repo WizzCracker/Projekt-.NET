@@ -25,7 +25,7 @@ namespace Projekt_NET.Controllers
         // GET: Clients
         public async Task<IActionResult> Index()
         {
-            var droneDbContext = _context.Clients.Include(c => c.District);
+            var droneDbContext = _context.Clients;
             return View(await droneDbContext.ToListAsync());
         }
 
@@ -38,7 +38,6 @@ namespace Projekt_NET.Controllers
             }
 
             var client = await _context.Clients
-                .Include(c => c.District)
                 .FirstOrDefaultAsync(m => m.ClientId == id);
             if (client == null)
             {
@@ -134,7 +133,6 @@ namespace Projekt_NET.Controllers
             }
 
             var client = await _context.Clients
-                .Include(c => c.District)
                 .FirstOrDefaultAsync(m => m.ClientId == id);
             if (client == null)
             {
