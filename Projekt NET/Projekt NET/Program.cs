@@ -46,15 +46,7 @@ builder.Services.AddDbContext<DroneDbContext>(x => x.UseSqlServer(connectionStri
 builder.Services.AddSingleton<WeatherService>();
 builder.Configuration.AddEnvironmentVariables();
 
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("AllowAll", policy =>
-    {
-        policy.AllowAnyOrigin()
-              .AllowAnyHeader()
-              .AllowAnyMethod();
-    });
-});
+builder.Services.AddCors();
 
 var app = builder.Build();
 
@@ -70,7 +62,13 @@ app.MapControllers();
 app.UseSwagger();
 app.UseSwaggerUI();
 
-app.UseCors("AllowAll");
+app.UseCors(policy =>
+{
+    policy.AllowAnyOrigin()
+          .AllowAnyHeader()
+          .WithMethods("GET", "POST")
+          .AllowCredentials();
+});
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
