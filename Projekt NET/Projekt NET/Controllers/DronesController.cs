@@ -54,11 +54,8 @@ namespace Projekt_NET.Controllers
         {
             ViewData["StatusList"] = new SelectList(Enum.GetValues(typeof(DStatus)));
 
-            var droneClouds = _context.DroneClouds
-                .Select(dc => new { DroneCloudId = (int?)dc.DroneCloudId, Name = dc.DroneCloudId.ToString() })
-                .ToList();
+            var droneClouds = _context.DroneClouds.ToList();
 
-            droneClouds.Insert(0, new { DroneCloudId = (int?)null, Name = "Unassigned" });
 
             ViewData["DroneCloudId"] = new SelectList(droneClouds, "DroneCloudId", "Name");
 
