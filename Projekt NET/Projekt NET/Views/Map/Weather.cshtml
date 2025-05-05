@@ -88,8 +88,10 @@
         .then(res => res.json())
         .then(data => {
             data.markers.forEach(marker => {
+                const icon = marker.isGrounded ? groundedDroneIcon : droneIcon;
+
                 L.marker([marker.lat, marker.lng], {
-                    icon: droneIcon
+                    icon: icon
                 }).addTo(map)
                     .bindPopup(marker.popup);
             });
