@@ -16,10 +16,12 @@ namespace Projekt_NET.Controllers
     public class DronesController : Controller
     {
         private readonly DroneDbContext _context;
+        private readonly IServiceScopeFactory _scopeFactory;
 
-        public DronesController(DroneDbContext context)
+        public DronesController(DroneDbContext context, IServiceScopeFactory scopeFactory)
         {
             _context = context;
+            _scopeFactory = scopeFactory;
         }
 
         // GET: Drones
@@ -189,5 +191,38 @@ namespace Projekt_NET.Controllers
         {
             return _context.Drones.Any(e => e.DroneId == id);
         }
+
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Move(int droneId, double latitude, double longitude)
+        {
+            var drone = await _context.Drones
+                .Include(d => d.Model)
+                .FirstOrDefaultAsync(d => d.DroneId == droneId);
+
+            if (drone == null)
+                return NotFound();
+
+            _ = Task.Run(async () =>
+            {
+                using var scope = _scopeFactory.CreateScope();
+                var scopedContext = scope.ServiceProvider.GetRequiredService<DroneDbContext>();
+
+                var freshDrone = await scopedContext.Drones
+                    .Include(d => d.Model)
+                    .FirstOrDefaultAsync(d => d.DroneId == droneId);
+
+                if (freshDrone != null)
+                {
+                    await DroneMoveManager.TryMoveDroneAsync(droneId, () =>
+                        freshDrone.MoveToAsync(latitude, longitude, scopedContext));
+                }
+            });
+
+            return RedirectToAction(nameof(Edit), new { id = droneId });
+        }
+
+
     }
 }
