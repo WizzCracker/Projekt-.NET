@@ -44,6 +44,7 @@ builder.Services.AddTransient<AuthService>();
 var connectionString = builder.Configuration.GetConnectionString("DRONES");
 builder.Services.AddDbContext<DroneDbContext>(x => x.UseSqlServer(connectionString));
 builder.Services.AddSingleton<WeatherService>();
+builder.Services.AddScoped<DroneService>();
 builder.Configuration.AddEnvironmentVariables();
 
 builder.Services.AddCors();

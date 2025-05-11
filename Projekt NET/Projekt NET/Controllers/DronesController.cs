@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using Projekt_NET.Models;
 using Projekt_NET.Models.System;
 using Microsoft.AspNetCore.Authorization;
+using Projekt_NET.Services;
 
 namespace Projekt_NET.Controllers
 {
@@ -18,11 +19,15 @@ namespace Projekt_NET.Controllers
         private readonly DroneDbContext _context;
         private readonly IServiceScopeFactory _scopeFactory;
 
-        public DronesController(DroneDbContext context, IServiceScopeFactory scopeFactory)
+        private readonly DroneService _droneService;
+
+        public DronesController(DroneDbContext context, IServiceScopeFactory scopeFactory, DroneService droneService)
         {
             _context = context;
             _scopeFactory = scopeFactory;
+            _droneService = droneService;
         }
+
 
         // GET: Drones
         public async Task<IActionResult> Index()
@@ -195,34 +200,12 @@ namespace Projekt_NET.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Move(int droneId, double latitude, double longitude)
+        public IActionResult Move(int droneId, double latitude, double longitude)
         {
-            var drone = await _context.Drones
-                .Include(d => d.Model)
-                .FirstOrDefaultAsync(d => d.DroneId == droneId);
-
-            if (drone == null)
-                return NotFound();
-
-            _ = Task.Run(async () =>
-            {
-                using var scope = _scopeFactory.CreateScope();
-                var scopedContext = scope.ServiceProvider.GetRequiredService<DroneDbContext>();
-
-                var freshDrone = await scopedContext.Drones
-                    .Include(d => d.Model)
-                    .FirstOrDefaultAsync(d => d.DroneId == droneId);
-
-                if (freshDrone != null)
-                {
-                    await DroneMoveManager.TryMoveDroneAsync(droneId, () =>
-                        freshDrone.MoveToAsync(latitude, longitude, scopedContext));
-                }
-            });
+            _ = _droneService.MoveDroneAsync(droneId, latitude, longitude);
 
             return RedirectToAction(nameof(Edit), new { id = droneId });
         }
-
 
     }
 }
