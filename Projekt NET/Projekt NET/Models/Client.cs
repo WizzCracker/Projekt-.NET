@@ -21,7 +21,6 @@ namespace Projekt_NET.Models
 
         [Required]
         public string Password { get; set; }
-        public List<Package> Packages { get; set; } = new();
 
         public string Role { get; set; } = "User";
     }
