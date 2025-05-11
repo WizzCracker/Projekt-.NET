@@ -200,9 +200,22 @@ namespace Projekt_NET.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Move(int droneId, double latitude, double longitude)
+        public async Task<IActionResult> Move(int droneId, double latitude, double longitude)
         {
             _ = _droneService.MoveDroneAsync(droneId, latitude, longitude);
+
+            var flight = new Flight
+            {
+                DroneId = droneId,
+                DeliveryCoordinates = new Coordinate
+                {
+                    Latitude = latitude,
+                    Longitude = longitude
+                }
+            };
+
+            _context.Flights.Add(flight);
+            await _context.SaveChangesAsync();
 
             return RedirectToAction(nameof(Edit), new { id = droneId });
         }

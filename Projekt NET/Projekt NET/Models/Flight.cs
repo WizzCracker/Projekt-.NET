@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Projekt_NET.Models
 {
@@ -11,14 +12,19 @@ namespace Projekt_NET.Models
         [Display(Name = "Departure date: ")]
         [DataType(DataType.Date)]
         [DisplayFormat(DataFormatString = "{0:yyyy-MM-dd}", ApplyFormatInEditMode = true)]
-        public DateTime DepDate { get; set; }
+        public DateTime DepDate { get; set; } = DateTime.UtcNow;
 
-        [Display(Name = "Planned arrival date: ")]
+        [Display(Name = "Arrival date: ")]
         [DataType(DataType.Date)]
         [DisplayFormat(DataFormatString = "{0:yyyy-MM-dd}", ApplyFormatInEditMode = true)]
-        public DateTime ArrivDate { get; set; }
+        public DateTime? ArrivDate { get; set; } = null;
+
+        [ForeignKey("Drone")]
+        public int? DroneId { get; set; }
+
+        public Drone? Drone { get; set; }
 
         [Required]
-        public List<Coordinate> DeliveryCoordinates { get; set; } = new();
+        public Coordinate DeliveryCoordinates { get; set; } = new();
     }
 }

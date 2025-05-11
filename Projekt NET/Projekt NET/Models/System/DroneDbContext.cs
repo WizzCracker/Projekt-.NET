@@ -28,9 +28,6 @@ namespace Projekt_NET.Models.System
 
             modelBuilder.Entity<District>()
                 .OwnsMany(d => d.BoundingPoints);
-
-            modelBuilder.Entity<Flight>()
-                .OwnsMany(f => f.DeliveryCoordinates);
         }
     }
 }
