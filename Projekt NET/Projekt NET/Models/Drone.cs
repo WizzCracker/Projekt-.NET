@@ -66,6 +66,9 @@ namespace Projekt_NET.Models
 
                 await Task.Delay(1000);
             }
+            Status = DStatus.Active;
+            context.Update(this);
+            await context.SaveChangesAsync();
         }
     }
 }

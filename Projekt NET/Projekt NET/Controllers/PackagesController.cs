@@ -19,11 +19,13 @@ namespace Projekt_NET.Controllers
     {
         private readonly DroneDbContext _context;
         private readonly DroneService _droneService;
+        private readonly GoogleGeocodingService _geoService;
 
-        public PackagesController(DroneDbContext context, DroneService droneService)
+        public PackagesController(DroneDbContext context, DroneService droneService, GoogleGeocodingService geoService)
         {
             _context = context;
             _droneService = droneService;
+            _geoService = geoService;
         }
 
         // GET: Packages
@@ -69,71 +71,93 @@ namespace Projekt_NET.Controllers
         [HttpPost]
         [Route("Dodaj")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Weight,TargetAddress")] Package package)
+        public async Task<IActionResult> Create([Bind("Weight,PickupAddress,TargetAddress")] Package package)
         {
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
+                return View(package);
+
+            var clientIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            if (clientIdClaim == null)
+                return Unauthorized();
+
+            int clientId = int.Parse(clientIdClaim.Value);
+            package.ClientId = clientId;
+
+            // Geokodowanie Pickup
+            var pickupCoords = await _droneService.GeocodeAddressAsync(package.PickupAddress);
+            if (pickupCoords == null)
             {
-                var clientIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
-                if (clientIdClaim == null)
+                ModelState.AddModelError("PickupAddress", "Nie udało się zgeokodować adresu odbioru.");
+                return View(package);
+            }
+
+            // Geokodowanie Target
+            var deliveryCoords = await _droneService.GeocodeAddressAsync(package.TargetAddress);
+            if (deliveryCoords == null)
+            {
+                ModelState.AddModelError("TargetAddress", "Nie udało się zgeokodować adresu dostawy.");
+                return View(package);
+            }
+
+            // Wybór drona
+            Drone drone = null;
+            if (package.DroneId == null)
+            {
+                var freeDrones = _context.Drones
+                    .Include(d => d.Coordinate)
+                    .Include(d => d.Model)
+                    .Where(d => d.Status == DStatus.Active && d.Coordinate != null)
+                    .ToList();
+
+                if (!freeDrones.Any())
                 {
-                    return Unauthorized();
-                }
-
-                int clientId = int.Parse(clientIdClaim.Value);
-                package.ClientId = clientId;
-
-                Drone drone = null;
-                if (package.DroneId == null)
-                {
-                    var freeDrones = _context.Drones
-                        .Include(d => d.Coordinate)
-                        .Include(d => d.Model)
-                        .Where(d => d.Status == DStatus.Active && d.Coordinate != null)
-                        .ToList();
-
-                    if (!freeDrones.Any())
-                    {
-                        ViewBag.Alert = "Brak dostępnych dronów.";
-                        return View(package);
-                    }
-
-                    // Tu możemy użyć współrzędnych klienta, jeśli miałby je przypisane — teraz używamy domyślnego
-                    drone = freeDrones
-                        .OrderBy(d => GeoFunctions.HaversineDistance(d.Coordinate.Latitude, d.Coordinate.Longitude, 50, 19)) // przykładowy punkt docelowy
-                        .First();
-
-                    package.DroneId = drone.DroneId;
-                }
-
-                
-                if (package.Weight > drone.Model.MaxCapacity)
-                {
-                    ModelState.AddModelError("Weight", $"The package weight exceeds the drone's maximum carry capacity of {drone.Model.MaxCapacity}.");
+                    ViewBag.Alert = "Brak dostępnych dronów.";
                     return View(package);
                 }
 
-                
-                _context.Add(package);
+                drone = freeDrones
+                    .OrderBy(d => GeoFunctions.HaversineDistance(
+                        d.Coordinate.Latitude,
+                        d.Coordinate.Longitude,
+                        pickupCoords.Value.lat,
+                        pickupCoords.Value.lng))
+                    .First();
 
-                drone.Status = DStatus.Busy;
-                _context.Drones.Update(drone);
-
-                await _context.SaveChangesAsync();
-
-                _ = Task.Run(() => _droneService.MoveDroneAsync(package.DroneId.Value, 50, 19));
-
-
-
-                return RedirectToAction(nameof(Index));
+                package.DroneId = drone.DroneId;
             }
 
-            foreach (var error in ModelState.Values.SelectMany(v => v.Errors))
+            // Sprawdzenie udźwigu
+            if (package.Weight > drone.Model.MaxCapacity)
             {
-                Console.WriteLine(error.ErrorMessage);
+                ModelState.AddModelError("Weight", $"Masa paczki przekracza udźwig drona: {drone.Model.MaxCapacity} kg.");
+                return View(package);
             }
 
-            return View(package);
+            // Zapisanie paczki i aktualizacja drona
+            _context.Packages.Add(package);
+            drone.Status = DStatus.Busy;
+            _context.Drones.Update(drone);
+
+            await _context.SaveChangesAsync();
+
+            // Ruch drona w tle — pickup → delivery
+            _ = Task.Run(async () =>
+            {
+                await _droneService.MoveDroneAsync(drone.DroneId, pickupCoords.Value.lat, pickupCoords.Value.lng);
+                await _droneService.MoveDroneAsync(drone.DroneId, deliveryCoords.Value.lat, deliveryCoords.Value.lng);
+
+                var droneToUpdate = await _context.Drones.FindAsync(drone.DroneId);
+                if (droneToUpdate != null)
+                {
+                    droneToUpdate.Status = DStatus.Active;
+                    _context.Drones.Update(droneToUpdate);
+                    await _context.SaveChangesAsync();
+                }
+            });
+
+            return RedirectToAction(nameof(Index));
         }
+
 
 
         // GET: Packages/Edit/5

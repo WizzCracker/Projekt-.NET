@@ -16,5 +16,8 @@ namespace Projekt_NET.Models
         public double? Weight { get; set; }
         [Required]
         public string TargetAddress { get; set; }
+        [Required]
+        public string PickupAddress { get; set; }
+
     }
 }
