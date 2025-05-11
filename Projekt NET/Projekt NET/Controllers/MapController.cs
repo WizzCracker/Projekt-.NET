@@ -10,11 +10,13 @@ public class MapController : Controller
 {
     private readonly DroneDbContext _context;
     private readonly WeatherService _weatherService;
+    private readonly DroneService _droneService;
 
-    public MapController(DroneDbContext context, WeatherService weatherService)
+    public MapController(DroneDbContext context, WeatherService weatherService, DroneService droneService)
     {
         _context = context;
         _weatherService = weatherService;
+        _droneService = droneService;
     }
 
     public IActionResult Index()
@@ -71,6 +73,8 @@ public class MapController : Controller
                 }
             }
 
+            int droneId = d.DroneId;
+
             var popupContent = $@"
             <strong>{d.CallSign}</strong><br>
             Status: {d.Status}<br>
@@ -88,6 +92,7 @@ public class MapController : Controller
                 lat,
                 lng = lon,
                 isGrounded,
+                droneId,
                 popup = popupContent
             });
         }
@@ -113,42 +118,26 @@ public class MapController : Controller
         return Json(result);
     }
 
-    [HttpGet]
-    public async Task<IActionResult> GetWeatherHazards()
+    public async Task<IActionResult> Move(int droneId, double latitude, double longitude)
     {
-        var coordsToCheck = new List<(double lat, double lon)>
-    {
-        (52.237, 21.017), // Warszawa
-        (50.061, 19.938), // Kraków
-        (53.428, 14.553)  // Szczecin
-    };
+        _ = _droneService.MoveDroneAsync(droneId, latitude, longitude);
 
-        var hazardZones = new List<object>();
-
-        foreach (var (lat, lon) in coordsToCheck)
+        var flight = new Flight
         {
-            var weather = await _weatherService.GetWeatherAsync(lat, lon);
-            if (weather != null)
+            DroneId = droneId,
+            DeliveryCoordinates = new Coordinate
             {
-                var wind = weather.Wind?.Speed ?? 0;
-                var hasStorm = weather.Weather?.Any(w => w.Main.ToLower().Contains("storm")) == true;
-                var hasRain = weather.Weather?.Any(w => w.Main.ToLower().Contains("rain")) == true;
-
-                if (wind > 10 || hasStorm || hasRain)
-                {
-                    hazardZones.Add(new
-                    {
-                        lat,
-                        lon,
-                        radius = 20000, // 20km
-                        reason = hasStorm ? "Storm" : hasRain ? "Rain" : "High wind"
-                    });
-                }
+                Latitude = latitude,
+                Longitude = longitude
             }
-        }
+        };
 
-        return Json(hazardZones);
+        _context.Flights.Add(flight);
+        await _context.SaveChangesAsync();
+
+        return RedirectToAction(nameof(Index));
     }
+
 }
 
 

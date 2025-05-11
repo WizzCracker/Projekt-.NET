@@ -61,6 +61,8 @@
 <script>
     let isLoading = true;
 
+    const droneMarkers = [];
+
     window.onload = async function () {
         document.getElementById('loadingOverlay').style.display = 'flex';
 
@@ -87,16 +89,21 @@
 
     function DrawDrones(load = 1, map) {
         if (load == 1) { document.getElementById('loadingOverlay').style.display = 'flex'; }
+        droneMarkers.forEach(m => map.removeLayer(m));
+        droneMarkers.length = 0;
         fetch('/Map/GetDroneData')
             .then(res => res.json())
             .then(data => {
                 data.markers.forEach(marker => {
                     const icon = marker.isGrounded ? groundedDroneIcon : droneIcon;
-
-                    L.marker([marker.lat, marker.lng], {
+                    marker.popup += `<button onclick="moveDrone(${marker.droneId}, this)">Move</button>`
+                    const droneMarker = L.marker([marker.lat, marker.lng], {
                         icon: icon
                     }).addTo(map)
-                        .bindPopup(marker.popup);
+                        .bindPopup(marker.popup, { closeOnClick: false });
+                    droneMarker.droneId = marker.droneId;
+                    droneMarker.originalPopup = marker.popup;
+                    droneMarkers.push(droneMarker);
                 });
             });
         document.getElementById('loadingOverlay').style.display = 'none'
@@ -132,6 +139,70 @@
             });
         document.getElementById('loadingOverlay').style.display = 'none'
     }
+
+    function showMoveForm(droneId) {
+        const marker = findMarkerByDroneId(droneId);
+        if (!marker) return;
+
+        const popup = marker.getPopup();
+        if (!popup) return;
+
+        const container = document.createElement('div');
+        container.innerHTML = `
+        <form onsubmit="submitMove(event, ${droneId})" onclick="event.stopPropagation()" onmousedown="event.stopPropagation()">
+            <label>Lat: <input type="number" step="any" name="lat" required></label><br>
+            <label>Lng: <input type="number" step="any" name="lng" required></label><br>
+            <button type="submit">Submit</button>
+            <button type="button" onclick="restorePopup(${droneId})">Cancel</button>
+        </form>
+    `;
+
+        popup.setContent(container);
+        marker.openPopup();
+
+        L.DomEvent.disableClickPropagation(container);
+        L.DomEvent.disableScrollPropagation(container);
+    }
+
+    function moveDrone(droneId){
+        const marker = findMarkerByDroneId(droneId);
+        showMoveForm(droneId);
+        marker.openPopup();
+    }
+
+    function findMarkerByDroneId(id) {
+        return droneMarkers.find(m => m.droneId == id);
+    }
+
+    function restorePopup(droneId) {
+        const marker = findMarkerByDroneId(droneId);
+        marker.closePopup();
+        if (!marker || !marker.originalPopup) return;
+
+        marker.bindPopup(marker.originalPopup, { closeOnClick: false });
+    }
+
+
+    function submitMove(event, droneId) {
+        event.preventDefault();
+
+        const form = event.target;
+        const lat = form.lat.value;
+        const lng = form.lng.value;
+
+        fetch(`/Map/Move?droneId=${droneId}&latitude=${lat}&longitude=${lng}`, {
+            method: 'POST'
+        })
+            .then(restorePopup(droneId))
+            .then(response => {
+                if (response.ok) {
+                    alert("Drone move sent.");
+                } else {
+                    alert("Failed to move drone.");
+                }
+            });
+    }
+
 
     
     
