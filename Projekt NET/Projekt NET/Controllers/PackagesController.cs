@@ -8,18 +8,22 @@ using Microsoft.EntityFrameworkCore;
 using Projekt_NET.Models;
 using Projekt_NET.Models.System;
 using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
+using Projekt_NET.Services;
 
 namespace Projekt_NET.Controllers
 {
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Admin, User")]
     [Route("Paczki")]
     public class PackagesController : Controller
     {
         private readonly DroneDbContext _context;
+        private readonly DroneService _droneService;
 
-        public PackagesController(DroneDbContext context)
+        public PackagesController(DroneDbContext context, DroneService droneService)
         {
             _context = context;
+            _droneService = droneService;
         }
 
         // GET: Packages
@@ -55,9 +59,6 @@ namespace Projekt_NET.Controllers
         [Route("Dodaj")]
         public IActionResult Create()
         {
-            ViewData["ClientId"] = new SelectList(_context.Clients, "ClientId", "Name");
-            ViewData["DroneId"] = new SelectList(_context.Drones, "DroneId", "CallSign");
-
             return View();
         }
 
@@ -68,43 +69,72 @@ namespace Projekt_NET.Controllers
         [HttpPost]
         [Route("Dodaj")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("PackageId,ClientId,DroneId,Weight,TargetAddress")] Package package)
+        public async Task<IActionResult> Create([Bind("Weight,TargetAddress")] Package package)
         {
             if (ModelState.IsValid)
             {
-                var drone = await _context.Drones
-                    .Include(d => d.Model)
-                    .FirstOrDefaultAsync(d => d.DroneId == package.DroneId);
-
-                if (drone == null || drone.Model == null)
+                var clientIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+                if (clientIdClaim == null)
                 {
-                    ModelState.AddModelError("", "Invalid drone or drone model.");
-                    ViewData["ClientId"] = new SelectList(_context.Clients, "ClientId", "Name", package.ClientId);
-                    ViewData["DroneId"] = new SelectList(_context.Drones, "DroneId", "CallSign", package.DroneId);
-                    return View(package);
+                    return Unauthorized();
                 }
 
+                int clientId = int.Parse(clientIdClaim.Value);
+                package.ClientId = clientId;
+
+                Drone drone = null;
+                if (package.DroneId == null)
+                {
+                    var freeDrones = _context.Drones
+                        .Include(d => d.Coordinate)
+                        .Include(d => d.Model)
+                        .Where(d => d.Status == DStatus.Active && d.Coordinate != null)
+                        .ToList();
+
+                    if (!freeDrones.Any())
+                    {
+                        ViewBag.Alert = "Brak dostępnych dronów.";
+                        return View(package);
+                    }
+
+                    // Tu możemy użyć współrzędnych klienta, jeśli miałby je przypisane — teraz używamy domyślnego
+                    drone = freeDrones
+                        .OrderBy(d => GeoFunctions.HaversineDistance(d.Coordinate.Latitude, d.Coordinate.Longitude, 50, 19)) // przykładowy punkt docelowy
+                        .First();
+
+                    package.DroneId = drone.DroneId;
+                }
+
+                
                 if (package.Weight > drone.Model.MaxCapacity)
                 {
                     ModelState.AddModelError("Weight", $"The package weight exceeds the drone's maximum carry capacity of {drone.Model.MaxCapacity}.");
-                    ViewData["ClientId"] = new SelectList(_context.Clients, "ClientId", "Name", package.ClientId);
-                    ViewData["DroneId"] = new SelectList(_context.Drones, "DroneId", "CallSign", package.DroneId);
                     return View(package);
                 }
 
+                
                 _context.Add(package);
+
+                drone.Status = DStatus.Busy;
+                _context.Drones.Update(drone);
+
                 await _context.SaveChangesAsync();
+
+                _ = Task.Run(() => _droneService.MoveDroneAsync(package.DroneId.Value, 50, 19));
+
+
+
                 return RedirectToAction(nameof(Index));
             }
+
             foreach (var error in ModelState.Values.SelectMany(v => v.Errors))
             {
                 Console.WriteLine(error.ErrorMessage);
             }
 
-            ViewData["ClientId"] = new SelectList(_context.Clients, "ClientId", "Name", package.ClientId);
-            ViewData["DroneId"] = new SelectList(_context.Drones, "DroneId", "CallSign", package.DroneId);
             return View(package);
         }
+
 
         // GET: Packages/Edit/5
         [Route("Edycja/{id}")]

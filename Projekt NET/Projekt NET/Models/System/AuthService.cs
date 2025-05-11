@@ -18,6 +18,7 @@ namespace Projekt_NET.Models.System
         public ClaimsIdentity GetClaims(Client client)
         {
             var result = new ClaimsIdentity(CookieAuthenticationDefaults.AuthenticationScheme);
+            result.AddClaim(new Claim(ClaimTypes.NameIdentifier, client.ClientId.ToString()));
             result.AddClaim(new Claim(ClaimTypes.Role, client.Role ?? "User"));
             result.AddClaim(new Claim(ClaimTypes.Name, client.Login ?? "Unknown"));
             return result;

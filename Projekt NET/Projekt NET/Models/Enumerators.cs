@@ -20,6 +20,9 @@ namespace Projekt_NET.Models
         Offline = 2,
 
         [Display(Name = "Broken")]
-        Broken = 3
+        Broken = 3,
+
+        [Display(Name = "Busy")]
+        Busy = 4
     }
 }
