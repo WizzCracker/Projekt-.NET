@@ -74,6 +74,7 @@ public class MapController : Controller
             }
 
             int droneId = d.DroneId;
+            string status = d.Status.ToString();
 
             var popupContent = $@"
             <strong>{d.CallSign}</strong><br>
@@ -93,6 +94,7 @@ public class MapController : Controller
                 lng = lon,
                 isGrounded,
                 droneId,
+                status,
                 popup = popupContent
             });
         }
