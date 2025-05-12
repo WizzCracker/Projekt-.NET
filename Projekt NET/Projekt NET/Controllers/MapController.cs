@@ -101,6 +101,75 @@ public class MapController : Controller
 
         return Json(new { markers = result });
     }
+
+    [HttpGet]
+    public async Task<IActionResult> GetSingleDroneData(int droneId)
+    {
+        var d = await _context.Drones
+            .Include(dr => dr.Model)
+            .Include(dr => dr.DroneCloud)
+            .FirstOrDefaultAsync(dr => dr.DroneId == droneId);
+
+        if (d == null)
+        {
+            return NotFound(new { error = "Drone not found" });
+        }
+
+        double lat = d.Coordinate.Latitude;
+        double lon = d.Coordinate.Longitude;
+
+        var weather = await _weatherService.GetWeatherAsync(lat, lon);
+        bool isGrounded = false;
+        string reason = "";
+
+        if (weather != null)
+        {
+            if (weather.Wind?.Speed >= 12.5)
+            {
+                isGrounded = true;
+                reason += $"Silny wiatr ({weather.Wind.Speed} m/s). ";
+            }
+
+            if (weather.Weather?.Any(w => w.Main == "Rain" || w.Main == "Thunderstorm") == true)
+            {
+                isGrounded = true;
+                reason += $"Zła pogoda: {weather.Weather[0].Main}. ";
+            }
+
+            if (weather.Rain?.OneHour > 0)
+            {
+                isGrounded = true;
+                reason += $"Opady: {weather.Rain.OneHour} mm. ";
+            }
+        }
+
+        string status = d.Status.ToString();
+
+        var popupContent = $@"
+        <strong>{d.CallSign}</strong><br>
+        Status: {d.Status}<br>
+        Model: {d.Model?.Name ?? "N/A"}<br>
+        Range: {d.Range} m<br>
+        Cloud: {d.DroneCloud?.Name ?? "Unassigned"}<br>";
+
+        if (isGrounded)
+        {
+            popupContent += $"<span style='color:red;'><strong>UZIEMIONY:</strong> {reason}</span>";
+        }
+
+        var result = new
+        {
+            lat,
+            lng = lon,
+            isGrounded,
+            droneId,
+            status,
+            popup = popupContent
+        };
+
+        return Json(result);
+    }
+
     [HttpGet]
     public async Task<IActionResult> GetDistrictData()
     {

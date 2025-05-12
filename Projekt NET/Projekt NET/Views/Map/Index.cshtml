@@ -176,7 +176,7 @@
     function moveDrone(droneId){
         const marker = findMarkerByDroneId(droneId);
         if (marker.status != 'Active') {
-            alert("Drone cannot move. Reason: ", marker.status);
+            alert("Drone cannot move. Reason: " + marker.status);
             return; 
         }
         if (marker.isGrounded) { alert("Drone cannot move. Reason: Grounded"); return; }
@@ -188,12 +188,20 @@
         return droneMarkers.find(m => m.droneId == id);
     }
 
-    function restorePopup(droneId) {
+    function sleep(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    async function restorePopup(droneId) {
         const marker = findMarkerByDroneId(droneId);
         marker.closePopup();
-        if (!marker || !marker.originalPopup) return;
-
-        marker.bindPopup(marker.originalPopup, { closeOnClick: false });
+        await sleep(500);
+        fetch(`/Map/GetSingleDroneData?droneId=${encodeURIComponent(droneId)}`)
+            .then(res => res.json())
+            .then(drone => {
+                drone.popup += `<button onclick="moveDrone(${marker.droneId}, this)">Move</button>`;
+                marker.bindPopup(drone.popup, { closeOnClick: false });
+            })
     }
 
 
