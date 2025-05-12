@@ -83,7 +83,6 @@ namespace Projekt_NET.Controllers
             int clientId = int.Parse(clientIdClaim.Value);
             package.ClientId = clientId;
 
-            // Geokodowanie Pickup
             var pickupCoords = await _droneService.GeocodeAddressAsync(package.PickupAddress);
             if (pickupCoords == null)
             {
@@ -91,7 +90,6 @@ namespace Projekt_NET.Controllers
                 return View(package);
             }
 
-            // Geokodowanie Target
             var deliveryCoords = await _droneService.GeocodeAddressAsync(package.TargetAddress);
             if (deliveryCoords == null)
             {
@@ -99,7 +97,6 @@ namespace Projekt_NET.Controllers
                 return View(package);
             }
 
-            // Wybór drona
             Drone drone = null;
             if (package.DroneId == null)
             {
@@ -126,21 +123,17 @@ namespace Projekt_NET.Controllers
                 package.DroneId = drone.DroneId;
             }
 
-            // Sprawdzenie udźwigu
             if (package.Weight > drone.Model.MaxCapacity)
             {
                 ModelState.AddModelError("Weight", $"Masa paczki przekracza udźwig drona: {drone.Model.MaxCapacity} kg.");
                 return View(package);
             }
 
-            // Zapisanie paczki i aktualizacja drona
             _context.Packages.Add(package);
-            drone.Status = DStatus.Busy;
             _context.Drones.Update(drone);
 
             await _context.SaveChangesAsync();
 
-            // Ruch drona w tle — pickup → delivery
             _ = Task.Run(async () =>
             {
                 await _droneService.MoveDroneAsync(drone.DroneId, pickupCoords.Value.lat, pickupCoords.Value.lng);

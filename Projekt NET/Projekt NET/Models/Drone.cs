@@ -50,7 +50,7 @@ namespace Projekt_NET.Models
             double totalDistance = GeoFunctions.HaversineDistance(currentLat, currentLng, targetLat, targetLng) * 1000; // meters
             int totalSteps = (int)(totalDistance / speedMps);
             if (totalSteps < 1) totalSteps = 1;
-
+            Status = DStatus.Busy;
             for (int i = 1; i <= totalSteps; i++)
             {
                 double progress = (double)i / totalSteps;

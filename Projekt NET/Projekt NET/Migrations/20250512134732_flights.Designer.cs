@@ -12,7 +12,7 @@ using Projekt_NET.Models.System;
 namespace Projekt_NET.Migrations
 {
     [DbContext(typeof(DroneDbContext))]
-    [Migration("20250512134042_flights")]
+    [Migration("20250512134732_flights")]
     partial class flights
     {
         /// <inheritdoc />
