@@ -106,7 +106,9 @@
                     droneMarkers.push(droneMarker);
                 });
             });
-        document.getElementById('loadingOverlay').style.display = 'none'
+        if (load == 1) {
+            document.getElementById('loadingOverlay').style.display = 'none'
+        }
     }
 
     function stringToColor(str) {
@@ -137,7 +139,9 @@
                     polygon.bindPopup(`<strong>District:</strong> ${district.name}`);
                 });
             });
-        document.getElementById('loadingOverlay').style.display = 'none'
+        if (load == 1) {
+            document.getElementById('loadingOverlay').style.display = 'none'
+        }
     }
 
     function showMoveForm(droneId) {
