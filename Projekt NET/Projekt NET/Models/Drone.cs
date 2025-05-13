@@ -1,6 +1,7 @@
 ﻿using Projekt_NET.Models.System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Diagnostics;
 
 namespace Projekt_NET.Models
 {
@@ -49,30 +50,40 @@ namespace Projekt_NET.Models
 
             double totalDistance = GeoFunctions.HaversineDistance(currentLat, currentLng, targetLat, targetLng) * 1000; // meters
             int totalSteps = (int)(totalDistance / speedMps);
+            Console.WriteLine(totalSteps);
             if (totalSteps < 1) totalSteps = 1;
             Status = DStatus.Busy;
-            for (int i = 1; i <= totalSteps; i++)
-            {
-                double progress = (double)i / totalSteps;
-
-                double newLat = GeoFunctions.Lerp(currentLat, targetLat, progress);
-                double newLng = GeoFunctions.Lerp(currentLng, targetLng, progress);
-
-                Coordinate.Latitude = newLat;
-                Coordinate.Longitude = newLng;
-
-                context.Update(this);
-                await context.SaveChangesAsync();
-
-                await Task.Delay(1000);
-            }
+            var stopwatch = new Stopwatch();
+            Console.WriteLine(totalSteps);
             var flight = context.Flights.FirstOrDefault(f => f.DroneId == DroneId && f.ArrivDate == null && f.DeliveryCoordinates.Latitude == targetLat && f.DeliveryCoordinates.Longitude == targetLng);
 
             if (flight == null)
             {
                 throw new InvalidOperationException("No active flight found for this drone.");
             }
+            Console.WriteLine(totalSteps);
+            flight.Steps = totalSteps;
+            Console.WriteLine(totalSteps);
+            for (int i = 1; i <= totalSteps; i++)
+            {
+                stopwatch.Restart();
+                double progress = (double)i / totalSteps;
+                Console.WriteLine(totalSteps);
+                double newLat = GeoFunctions.Lerp(currentLat, targetLat, progress);
+                double newLng = GeoFunctions.Lerp(currentLng, targetLng, progress);
 
+                Coordinate.Latitude = newLat;
+                Coordinate.Longitude = newLng;
+
+                flight.Steps = totalSteps - i;
+
+                context.Update(this);
+                await context.SaveChangesAsync();
+                Console.WriteLine((int)stopwatch.ElapsedMilliseconds);
+                await Task.Delay(1000 - (int)stopwatch.ElapsedMilliseconds);
+                Console.WriteLine(stopwatch.ElapsedMilliseconds);
+            }
+            Console.WriteLine(totalSteps);
             flight.ArrivDate = DateTime.UtcNow;
 
             Status = DStatus.Active;

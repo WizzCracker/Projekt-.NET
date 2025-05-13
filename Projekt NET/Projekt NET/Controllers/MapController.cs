@@ -197,7 +197,7 @@ public class MapController : Controller
         {
             throw new InvalidOperationException("Drone is already in flight");
         }
-        _ = _droneService.MoveDroneAsync(droneId, latitude, longitude);
+        
 
         var flight = new Flight
         {
@@ -208,11 +208,41 @@ public class MapController : Controller
                 Longitude = longitude
             }
         };
-
+        
         _context.Flights.Add(flight);
         await _context.SaveChangesAsync();
-
+        _ = _droneService.MoveDroneAsync(droneId, latitude, longitude);
         return RedirectToAction(nameof(Index));
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> GetFlightData(int droneId)
+    {
+        var flight = await _context.Flights
+            .Include(f => f.Drone)
+            .Where(f => f.DroneId == droneId && f.ArrivDate == null)
+            .FirstOrDefaultAsync();
+
+        if (flight == null)
+        {
+            return NotFound(new { message = "No active flight found for this drone." });
+        }
+
+        var result = new
+        {
+            flight.FlightId,
+            flight.DepDate,
+            flight.ArrivDate,
+            flight.DroneId,
+            flight.Steps,
+            Coordinates = new
+            {
+                flight.DeliveryCoordinates.Latitude,
+                flight.DeliveryCoordinates.Longitude
+            }
+        };
+
+        return Json(result);
     }
 
 }

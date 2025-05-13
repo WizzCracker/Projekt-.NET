@@ -65,6 +65,8 @@
 
     const droneMarkers = [];
 
+    let animArray = [];
+
     window.onload = async function () {
 
         const map = L.map('map', {
@@ -85,6 +87,33 @@
             DrawDrones(0, map)
         ]);
 
+        animArray = droneMarkers.filter(drone => drone.status === "Busy");
+
+        await animArray.forEach(droneMarker => {
+            fetch(`/Map/getFlightData?droneId=${encodeURIComponent(droneMarker.droneId)}`)
+                .then(response => {
+                    if (!response.ok && response.status != 404) {
+                        console.log(response)
+                        throw new Error("Invalid flight data response");
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (!data || !data.coordinates) {
+                        return;
+                    }
+                    console.log(data.steps);
+                    animateMarkerSmooth(
+                        droneMarker,
+                        data.coordinates.latitude,
+                        data.coordinates.longitude,
+                        data.steps
+                    );
+                })
+                .catch(err => {
+                    console.error("Flight fetch failed:", err);
+                });
+        });
 
         document.getElementById('loadingOverlay').style.display = 'none';
     }
@@ -207,7 +236,7 @@
     }
 
 
-    function submitMove(event, droneId) {
+    async function submitMove(event, droneId) {
         event.preventDefault();
 
         const form = event.target;
@@ -225,8 +254,61 @@
                     alert("Failed to move drone.");
                 }
             });
+
+        console.log(droneId)
+        setTimeout(() => {
+            fetch(`/Map/getFlightData?droneId=${encodeURIComponent(droneId)} `)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error("Invalid flight data response");
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (!data || !data.coordinates) {
+                        console.error("Missing flight data or coordinates");
+                        return;
+                    }
+                    console.log(data);
+                    droneMarker = findMarkerByDroneId(droneId);
+                    animateMarkerSmooth(
+                        droneMarker,
+                        data.coordinates.latitude,
+                        data.coordinates.longitude,
+                        data.steps
+                    );
+                })
+                .catch(err => {
+                    console.error("Flight fetch failed:", err);
+                });
+        }, 1000)
         
         
+        
+    }
+
+    function animateMarkerSmooth(marker, destLat, destLng, steps) {
+        const duration = steps * 1000; 
+        const startLatLng = marker.getLatLng();
+        const startTime = performance.now();
+        console.log(`Animating to: ${destLat}, ${destLng} in ${steps} steps`);
+        function animate(currentTime) {
+            const elapsed = currentTime - startTime;
+            const t = Math.min(elapsed / duration, 1);
+
+            const newLat = startLatLng.lat + t * (destLat - startLatLng.lat);
+            const newLng = startLatLng.lng + t * (destLng - startLatLng.lng);
+
+            marker.setLatLng([newLat, newLng]);
+
+            if (t < 1) {
+                requestAnimationFrame(animate);
+            } else {
+                marker.setLatLng([destLat, destLng]); 
+            }
+        }
+
+        requestAnimationFrame(animate);
     }
 
 
