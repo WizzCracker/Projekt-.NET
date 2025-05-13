@@ -105,6 +105,7 @@
                         icon: icon
                     }).addTo(map)
                         .bindPopup(marker.popup, { closeOnClick: false });
+                    droneMarker.isGrounded = marker.isGrounded;
                     droneMarker.droneId = marker.droneId;
                     droneMarker.status = marker.status;
                     droneMarker.originalPopup = marker.popup;
@@ -179,6 +180,7 @@
             alert("Drone cannot move. Reason: " + marker.status);
             return; 
         }
+        console.log(marker.isGrounded);
         if (marker.isGrounded) { alert("Drone cannot move. Reason: Grounded"); return; }
         showMoveForm(droneId);
         marker.openPopup();
