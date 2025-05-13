@@ -191,6 +191,12 @@ public class MapController : Controller
 
     public async Task<IActionResult> Move(int droneId, double latitude, double longitude)
     {
+        bool droneIsInFlight = _context.Flights
+            .Any(f => f.DroneId == droneId && f.ArrivDate == null);
+        if(droneIsInFlight)
+        {
+            throw new InvalidOperationException("Drone is already in flight");
+        }
         _ = _droneService.MoveDroneAsync(droneId, latitude, longitude);
 
         var flight = new Flight

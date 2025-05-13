@@ -78,6 +78,12 @@
         <button type="submit">Move Drone</button>
     </form>
 </div>
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">
+        @TempData["Error"]
+    </div>
+}
 
 <div>
     <a asp-action="Index">Back to List</a>

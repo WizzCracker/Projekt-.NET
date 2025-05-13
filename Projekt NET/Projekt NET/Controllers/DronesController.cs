@@ -202,6 +202,16 @@ namespace Projekt_NET.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Move(int droneId, double latitude, double longitude)
         {
+
+
+            bool droneIsInFlight = _context.Flights
+            .Any(f => f.DroneId == droneId && f.ArrivDate == null);
+            if (droneIsInFlight)
+            {
+                TempData["Error"] = "Drone is already in flight!";
+                return RedirectToAction(nameof(Edit), new { id = droneId });
+            }
+
             _ = _droneService.MoveDroneAsync(droneId, latitude, longitude);
 
             var flight = new Flight
