@@ -26,5 +26,7 @@ namespace Projekt_NET.Models
 
         [Required]
         public Coordinate DeliveryCoordinates { get; set; } = new();
+
+        public int Steps { get; set; }
     }
 }
