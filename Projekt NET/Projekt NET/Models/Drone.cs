@@ -66,6 +66,15 @@ namespace Projekt_NET.Models
 
                 await Task.Delay(1000);
             }
+            var flight = context.Flights.FirstOrDefault(f => f.DroneId == DroneId && f.ArrivDate == null && f.DeliveryCoordinates.Latitude == targetLat && f.DeliveryCoordinates.Longitude == targetLng);
+
+            if (flight == null)
+            {
+                throw new InvalidOperationException("No active flight found for this drone.");
+            }
+
+            flight.ArrivDate = DateTime.UtcNow;
+
             Status = DStatus.Active;
             context.Update(this);
             await context.SaveChangesAsync();
