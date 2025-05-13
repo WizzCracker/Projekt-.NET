@@ -52,11 +52,33 @@ builder.Services.AddCors();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+
+    try
+    {
+        var context = services.GetRequiredService<DroneDbContext>();
+        var droneService = services.GetRequiredService<DroneService>();
+
+        var flights = context.Flights
+            .Where(f => f.ArrivDate == null && f.DroneId != null)
+            .ToList();
+
+        foreach (var flight in flights)
+        {
+            droneService.MoveDroneAsync(flight.DroneId.Value, flight.DeliveryCoordinates.Latitude, flight.DeliveryCoordinates.Longitude);
+        }
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine("Startup drone move failed: " + ex.Message);
+    }
+}
+
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 
