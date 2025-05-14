@@ -174,6 +174,7 @@ namespace Projekt_NET.Migrations
                     DroneId = table.Column<int>(type: "int", nullable: true),
                     DeliveryCoordinates_Latitude = table.Column<double>(type: "float", nullable: false),
                     DeliveryCoordinates_Longitude = table.Column<double>(type: "float", nullable: false),
+                    Steps = table.Column<int>(type: "int", nullable: false),
                     FlightPathId = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>

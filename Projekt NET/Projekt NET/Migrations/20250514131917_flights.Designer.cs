@@ -12,7 +12,7 @@ using Projekt_NET.Models.System;
 namespace Projekt_NET.Migrations
 {
     [DbContext(typeof(DroneDbContext))]
-    [Migration("20250512134732_flights")]
+    [Migration("20250514131917_flights")]
     partial class flights
     {
         /// <inheritdoc />
@@ -209,6 +209,9 @@ namespace Projekt_NET.Migrations
                         .HasColumnType("int");
 
                     b.Property<int?>("FlightPathId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Steps")
                         .HasColumnType("int");
 
                     b.HasKey("FlightId");

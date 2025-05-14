@@ -208,6 +208,9 @@ namespace Projekt_NET.Migrations
                     b.Property<int?>("FlightPathId")
                         .HasColumnType("int");
 
+                    b.Property<int>("Steps")
+                        .HasColumnType("int");
+
                     b.HasKey("FlightId");
 
                     b.HasIndex("DroneId");
