@@ -64,6 +64,7 @@
     let isLoading = true;
 
     const droneMarkers = [];
+    const animationControllers = {};
 
     let animArray = [];
 
@@ -129,7 +130,8 @@
             .then(data => {
                 data.markers.forEach(marker => {
                     const icon = marker.isGrounded ? groundedDroneIcon : droneIcon;
-                    marker.popup += `<button onclick="moveDrone(${marker.droneId}, this)">Move</button>`
+                    marker.popup += `<button onclick="moveDrone(${marker.droneId}, this)">Move</button><button onclick="stopDrone(${marker.droneId})">Stop</button>`;
+
                     const droneMarker = L.marker([marker.lat, marker.lng], {
                         icon: icon
                     }).addTo(map)
@@ -230,9 +232,13 @@
         fetch(`/Map/GetSingleDroneData?droneId=${encodeURIComponent(droneId)}`)
             .then(res => res.json())
             .then(drone => {
-                drone.popup += `<button onclick="moveDrone(${marker.droneId}, this)">Move</button>`;
+                if (drone.status !== "Inactive" && !drone.isGrounded) {
+                    drone.popup += `<button onclick="moveDrone(${marker.droneId}, this)">Move</button>`;
+                    drone.popup += `<button onclick="stopDrone(${marker.droneId})">Stop</button>`;
+                }
                 marker.bindPopup(drone.popup, { closeOnClick: false });
-            })
+    });
+
     }
 
 
@@ -244,16 +250,17 @@
         const lng = form.lng.value;
 
         fetch(`/Map/Move?droneId=${droneId}&latitude=${lat}&longitude=${lng}`, {
-            method: 'POST'
+        method: 'POST'
         })
-            .then(restorePopup(droneId))
             .then(response => {
                 if (response.ok) {
                     alert("Drone move sent.");
+                    return restorePopup(droneId);
                 } else {
                     alert("Failed to move drone.");
                 }
             });
+
 
         console.log(droneId)
         setTimeout(() => {
@@ -287,11 +294,16 @@
         
     }
 
-    function animateMarkerSmooth(marker, destLat, destLng, steps) {
-        const duration = steps * 1000; 
+        function animateMarkerSmooth(marker, destLat, destLng, steps) {
+        const duration = steps * 1000;
         const startLatLng = marker.getLatLng();
         const startTime = performance.now();
-        console.log(`Animating to: ${destLat}, ${destLng} in ${steps} steps`);
+
+        
+        if (animationControllers[marker.droneId]) {
+            cancelAnimationFrame(animationControllers[marker.droneId]);
+        }
+
         function animate(currentTime) {
             const elapsed = currentTime - startTime;
             const t = Math.min(elapsed / duration, 1);
@@ -302,17 +314,35 @@
             marker.setLatLng([newLat, newLng]);
 
             if (t < 1) {
-                requestAnimationFrame(animate);
+                animationControllers[marker.droneId] = requestAnimationFrame(animate);
             } else {
-                marker.setLatLng([destLat, destLng]); 
+                marker.setLatLng([destLat, destLng]);
+                delete animationControllers[marker.droneId];
             }
         }
 
-        requestAnimationFrame(animate);
+        animationControllers[marker.droneId] = requestAnimationFrame(animate);
     }
 
 
-    
+
+    function stopDrone(droneId) {
+        fetch(`/Map/Stop?droneId=${droneId}`, { method: 'POST' })
+            .then(res => {
+                if (res.ok) {
+                    
+                    if (animationControllers[droneId]) {
+                        cancelAnimationFrame(animationControllers[droneId]);
+                        delete animationControllers[droneId];
+                    }
+                    alert("Drone stopped.");
+                } else {
+                    alert("Failed to stop drone.");
+                }
+            });
+    }
+
+
     
 </script>
 

@@ -37,58 +37,79 @@ namespace Projekt_NET.Models
         [DisplayFormat(DataFormatString = "{0:yyyy-MM-dd}", ApplyFormatInEditMode = true)]
         public DateTime AqDate { get; set; }
 
+        [NotMapped]
+        public CancellationTokenSource? CancellationSource { get; set; }
 
-        public async Task MoveToAsync(double targetLat, double targetLng, DroneDbContext context)
+        public async Task MoveToAsync(double targetLat, double targetLng, DroneDbContext context, CancellationToken token)
         {
             if (Model == null || Coordinate == null)
                 throw new InvalidOperationException("Drone must have assigned model and coordinates.");
 
             double speedMps = Model.MaxSpeed / 3.6;
-
             double currentLat = Coordinate.Latitude;
             double currentLng = Coordinate.Longitude;
 
-            double totalDistance = GeoFunctions.HaversineDistance(currentLat, currentLng, targetLat, targetLng) * 1000; // meters
-            int totalSteps = (int)(totalDistance / speedMps);
-            Console.WriteLine(totalSteps);
-            if (totalSteps < 1) totalSteps = 1;
+            double totalDistance = GeoFunctions.HaversineDistance(currentLat, currentLng, targetLat, targetLng) * 1000;
+            int totalSteps = Math.Max((int)(totalDistance / speedMps), 1);
+
             Status = DStatus.Busy;
-            var stopwatch = new Stopwatch();
-            Console.WriteLine(totalSteps);
-            var flight = context.Flights.FirstOrDefault(f => f.DroneId == DroneId && f.ArrivDate == null && f.DeliveryCoordinates.Latitude == targetLat && f.DeliveryCoordinates.Longitude == targetLng);
+
+            var flight = context.Flights.FirstOrDefault(f =>
+               f.DroneId == DroneId &&
+               f.ArrivDate == null &&
+               f.DeliveryCoordinates.Latitude == targetLat &&
+               f.DeliveryCoordinates.Longitude == targetLng);
 
             if (flight == null)
-            {
                 throw new InvalidOperationException("No active flight found for this drone.");
-            }
-            Console.WriteLine(totalSteps);
+
             flight.Steps = totalSteps;
-            Console.WriteLine(totalSteps);
+            context.Update(flight);
+
+            var stopwatch = new Stopwatch();
+
             for (int i = 1; i <= totalSteps; i++)
             {
-                stopwatch.Restart();
-                double progress = (double)i / totalSteps;
-                Console.WriteLine(totalSteps);
-                double newLat = GeoFunctions.Lerp(currentLat, targetLat, progress);
-                double newLng = GeoFunctions.Lerp(currentLng, targetLng, progress);
+                if (token.IsCancellationRequested)
+                {
+                    flight.ArrivDate = DateTime.UtcNow;
+                    Status = DStatus.Active;
 
-                Coordinate.Latitude = newLat;
-                Coordinate.Longitude = newLng;
+                    context.Update(this);
+                    context.Update(flight);
+                    await context.SaveChangesAsync();
+                    return;
+                }
+
+                stopwatch.Restart();
+
+                double progress = (double)i / totalSteps;
+                Coordinate.Latitude = GeoFunctions.Lerp(currentLat, targetLat, progress);
+                Coordinate.Longitude = GeoFunctions.Lerp(currentLng, targetLng, progress);
 
                 flight.Steps = totalSteps - i;
 
                 context.Update(this);
+                context.Update(flight);
                 await context.SaveChangesAsync();
-                Console.WriteLine((int)stopwatch.ElapsedMilliseconds);
-                await Task.Delay(1000 - (int)stopwatch.ElapsedMilliseconds);
-                Console.WriteLine(stopwatch.ElapsedMilliseconds);
-            }
-            Console.WriteLine(totalSteps);
-            flight.ArrivDate = DateTime.UtcNow;
 
+                int delay = Math.Max(1000 - (int)stopwatch.ElapsedMilliseconds, 0);
+                await Task.Delay(delay, token);
+            }
+
+            flight.ArrivDate = DateTime.UtcNow;
             Status = DStatus.Active;
+
             context.Update(this);
+            context.Update(flight);
             await context.SaveChangesAsync();
+        }
+
+        
+
+        public void StopMovement(DroneDbContext context)
+        {
+            CancellationSource?.Cancel();
         }
     }
 }
