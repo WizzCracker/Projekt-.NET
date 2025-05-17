@@ -12,7 +12,7 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace Projekt_NET.Controllers
 {
-    [Authorize(Roles = "Admin")]
+    [Authorize]
     public class ClientsController : Controller
     {
         private readonly DroneDbContext _context;

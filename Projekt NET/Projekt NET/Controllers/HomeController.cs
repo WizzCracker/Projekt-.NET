@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Security.Claims;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 
 namespace Projekt_NET.Controllers
 {
@@ -85,6 +86,25 @@ namespace Projekt_NET.Controllers
             return RedirectToAction("Weather", "Map");
         }
 
+        [Authorize]
+        public async Task<IActionResult> MyPackages()
+        {
+            var clientIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            if (clientIdClaim == null)
+                return Unauthorized();
+
+            int clientId = int.Parse(clientIdClaim.Value);
+
+            var packages = await _context.Packages
+                .Include(p => p.Drone)
+                .Where(p => p.ClientId == clientId)
+                .ToListAsync();
+
+            return View(packages);
+        }
+
+
+
         [Route("Account/[action]")]
         [HttpGet]
         public async Task<IActionResult> Login()
@@ -110,6 +130,43 @@ namespace Projekt_NET.Controllers
                 ViewBag.Alert = "Niepoprawny login lub has³o.";
                 return View();
             }
+        }
+
+        [HttpGet]
+        [AllowAnonymous]
+        public IActionResult Register()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        [AllowAnonymous]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Register([Bind("Name,Surname,PhoneNumber,Login,Password")] Client client)
+        {
+            if (ModelState.IsValid)
+            {
+                if (_context.Clients.Any(c => c.Login == client.Login))
+                {
+                    ModelState.AddModelError("Login", "Login ju¿ istnieje.");
+                    return View(client);
+                }
+
+                var passwordHasher = new PasswordHasher<Client>();
+                client.Password = passwordHasher.HashPassword(client, client.Password);
+                client.Role = "User";
+
+                _context.Clients.Add(client);
+                await _context.SaveChangesAsync();
+
+                var claims = _authService.GetClaims(client);
+                var principal = new ClaimsPrincipal(claims);
+                await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
+
+                return RedirectToAction("Index", "Home");
+            }
+
+            return View(client);
         }
 
         [HttpPost]

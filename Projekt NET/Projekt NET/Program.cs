@@ -4,9 +4,10 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Projekt_NET.Models.System;
 using Projekt_NET.Services;
+using QuestPDF.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
-
+QuestPDF.Settings.License = LicenseType.Community;
 // Add services to the container.
 builder.Services.AddControllers().AddJsonOptions(options =>
 {
