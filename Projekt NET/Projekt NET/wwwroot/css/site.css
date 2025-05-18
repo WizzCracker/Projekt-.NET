@@ -18,5 +18,10 @@ html {
 }
 
 body {
-  margin-bottom: 60px;
+    margin-bottom: 60px;
+    background-color: #e8f5e9;
+}
+
+.navbar {
+    background-color: #D9ECD5;
 }
