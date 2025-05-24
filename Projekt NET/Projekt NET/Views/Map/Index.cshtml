@@ -327,20 +327,41 @@
 
 
     function stopDrone(droneId) {
-        fetch(`/Map/Stop?droneId=${droneId}`, { method: 'POST' })
-            .then(res => {
-                if (res.ok) {
-                    
-                    if (animationControllers[droneId]) {
-                        cancelAnimationFrame(animationControllers[droneId]);
-                        delete animationControllers[droneId];
-                    }
-                    alert("Drone stopped.");
-                } else {
-                    alert("Failed to stop drone.");
+    fetch(`/Map/Stop?droneId=${droneId}`, { method: 'POST' })
+        .then(res => {
+            if (res.ok) {
+                if (animationControllers[droneId]) {
+                    cancelAnimationFrame(animationControllers[droneId]);
+                    delete animationControllers[droneId];
                 }
-            });
+
+                // Pobierz i zaktualizuj dane drona
+                fetch(`/Map/GetSingleDroneData?droneId=${encodeURIComponent(droneId)}`)
+                    .then(res => res.json())
+                    .then(drone => {
+                        const marker = findMarkerByDroneId(droneId);
+                        if (!marker) return;
+
+                        marker.status = drone.status;
+                        marker.isGrounded = drone.isGrounded;
+
+                        let updatedPopup = drone.popup;
+                        if (drone.status !== "Inactive" && !drone.isGrounded) {
+                            updatedPopup += `<button onclick="moveDrone(${marker.droneId}, this)">Move</button>`;
+                            updatedPopup += `<button onclick="stopDrone(${marker.droneId})">Stop</button>`;
+                        }
+
+                        marker.bindPopup(updatedPopup, { closeOnClick: false });
+                        marker.openPopup();
+                    });
+
+                alert("Drone stopped.");
+            } else {
+                alert("Failed to stop drone.");
+            }
+        });
     }
+
 
 
     
