@@ -2,13 +2,11 @@
     ViewData["Title"] = "Map";
 }
 
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
 <style>
-    body {
-        display: flex; /* Use flexbox for overall layout */
-        font-family: sans-serif;
-        margin: 0;
-        padding: 0;
-    }
 
     #map-container { /* New container for map and controls */
         display: flex;
@@ -26,7 +24,7 @@
         width: 25%; /* Adjust width as needed, e.g., 25% for sidebar */
         padding: 20px;
         box-sizing: border-box;
-        background-color: #f8f8f8;
+        background-color: #e8f5e9;
         border-left: 1px solid #eee;
         display: flex;
         flex-direction: column;
@@ -92,7 +90,7 @@
     .dropdown-content {
         display: none;
         position: absolute;
-        background-color: #f9f9f9;
+        background-color: #e5ccff;
         min-width: 300px; /* Adjust width as needed */
         box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
         z-index: 1000; /* Higher than map, lower than loading overlay */
@@ -511,6 +509,94 @@
         });
     }
 
+        // --- CUSTOMER SERVICE CHATBOX LOGIC ---
+        const customerServiceButton = document.getElementById('customerServiceButton');
+        const customerServiceDropdown = document.getElementById('customerServiceDropdown');
+        const chatMessages = document.getElementById('chat-messages');
+        const chatInput = document.getElementById('chat-input');
+        const sendButton = document.getElementById('send-button');
+
+        // Initial prompt for Gemini (sent to your backend)
+    const initialGeminiPrompt = "You are a formal and efficient customer service representative for a drone tracking map service. Your role is strictly to provide information and assistance concerning the drone map's functions and data. If a user asks a question that falls outside the scope of the drone tracking map service, state clearly that the query is beyond your operational parameters and offer to redirect the conversation back to map-related topics.";
+
+        customerServiceButton.addEventListener('click', function () {
+            customerServiceDropdown.classList.toggle('show');
+            // If showing, ensure chat messages are scrolled to bottom
+            if (customerServiceDropdown.classList.contains('show')) {
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+                chatInput.focus(); // Focus on the input when opened
+            }
+        });
+
+        // Close the dropdown if the user clicks outside of it
+        window.addEventListener('click', function (event) {
+            if (!event.target.matches('.dropdown-button') && !customerServiceDropdown.contains(event.target)) {
+                if (customerServiceDropdown.classList.contains('show')) {
+                    customerServiceDropdown.classList.remove('show');
+                }
+            }
+        });
+
+        // Function to add a message to the chat
+        function addMessage(message, sender) {
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add('chat-message');
+            messageDiv.classList.add(sender + '-message');
+            messageDiv.textContent = message;
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight; // Auto-scroll to the bottom
+        }
+
+        // Handle sending messages
+        sendButton.addEventListener('click', sendMessage);
+        chatInput.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+
+        async function sendMessage() {
+            const userMessage = chatInput.value.trim();
+            if (userMessage === '') return;
+
+            addMessage(userMessage, 'user');
+            chatInput.value = '';
+            sendButton.disabled = true; // Disable button while waiting for response
+            chatInput.placeholder = "Waiting for response...";
+
+            try {
+                // Call your ASP.NET Core backend API
+                const response = await fetch('/api/GeminiChat/SendMessage', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        userMessage: userMessage,
+                        prompt: initialGeminiPrompt
+                    })
+                });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`HTTP error! status: ${response.status} - ${errorText}`);
+                }
+
+                const data = await response.json();
+                addMessage(data.geminiResponse, 'gemini');
+
+            } catch (error) {
+                console.error('Error communicating with Gemini API:', error);
+                addMessage('Sorry, I am having trouble connecting to the service. Please try again later.', 'gemini');
+            } finally {
+                sendButton.disabled = false; // Re-enable button
+                chatInput.placeholder = "Type your message...";
+                chatInput.focus(); // Re-focus after sending
+            }
+        }
+        
+
+        // --- END CUSTOMER SERVICE CHATBOX LOGIC ---
 
 
     

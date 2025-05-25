@@ -48,6 +48,7 @@ builder.Services.AddSingleton<WeatherService>();
 builder.Services.AddScoped<DroneService>();
 builder.Services.AddHttpClient<GoogleGeocodingService>();
 builder.Configuration.AddEnvironmentVariables();
+builder.Services.AddHttpClient();
 
 builder.Services.AddCors();
 
