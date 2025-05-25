@@ -1,6 +1,7 @@
 ﻿using Projekt_NET.Models.System;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
+using Projekt_NET.Models;
 
 namespace Projekt_NET.Services
 {
@@ -44,7 +45,7 @@ namespace Projekt_NET.Services
 
         public Task<bool> MoveDroneAsync(int droneId, double latitude, double longitude)
         {
-            return DroneMoveManager.TryMoveDroneAsync(droneId, async () =>
+            return DroneMoveManager.TryMoveDroneAsync(droneId, async (cancellationToken) =>
             {
                 using var scope = _scopeFactory.CreateScope();
                 var context = scope.ServiceProvider.GetRequiredService<DroneDbContext>();
@@ -55,10 +56,39 @@ namespace Projekt_NET.Services
 
                 if (drone != null)
                 {
-                    await drone.MoveToAsync(latitude, longitude, context);
+                    await drone.MoveToAsync(latitude, longitude, context, cancellationToken);
                 }
             });
         }
+
+
+        public async Task<bool> StopDrone(int droneId)
+        {
+            
+            if (!DroneMoveManager.TryStopDrone(droneId))
+                return false;
+
+            using var scope = _scopeFactory.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<DroneDbContext>();
+            var drone = await context.Drones.FirstOrDefaultAsync(d => d.DroneId == droneId);
+            if (drone == null)
+                return false;
+
+            var flight = await context.Flights.FirstOrDefaultAsync(f => f.DroneId == droneId && f.ArrivDate == null);
+
+            if (flight != null)
+            {
+                flight.ArrivDate = DateTime.UtcNow;
+                context.Update(flight);
+            }
+            drone.Status = DStatus.Active;
+            context.Update(drone);
+
+            await context.SaveChangesAsync();
+            return true;
+        }
+
+
     }
 
 }

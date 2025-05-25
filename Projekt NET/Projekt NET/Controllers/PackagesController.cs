@@ -10,6 +10,10 @@ using Projekt_NET.Models.System;
 using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
 using Projekt_NET.Services;
+using QuestPDF.Fluent;
+using QuestPDF.Helpers;
+using QuestPDF.Infrastructure;
+using QuestPDF.Previewer;
 
 namespace Projekt_NET.Controllers
 {
@@ -108,9 +112,10 @@ namespace Projekt_NET.Controllers
 
                 if (!freeDrones.Any())
                 {
-                    ViewBag.Alert = "Brak dostępnych dronów.";
+                    ModelState.AddModelError(string.Empty, "Brak dostępnych dronów. Spróbuj ponownie później.");
                     return View(package);
                 }
+
 
                 drone = freeDrones
                     .OrderBy(d => GeoFunctions.HaversineDistance(
@@ -130,7 +135,28 @@ namespace Projekt_NET.Controllers
             }
 
             _context.Packages.Add(package);
-            _context.Drones.Update(drone);
+
+            var pickupFlight = new Flight
+            {
+                DroneId = drone.DroneId,
+                DeliveryCoordinates = new Coordinate
+                {
+                    Latitude = pickupCoords.Value.lat,
+                    Longitude = pickupCoords.Value.lng
+                }
+            };
+            _context.Flights.Add(pickupFlight);
+
+            var deliveryFlight = new Flight
+            {
+                DroneId = drone.DroneId,
+                DeliveryCoordinates = new Coordinate
+                {
+                    Latitude = deliveryCoords.Value.lat,
+                    Longitude = deliveryCoords.Value.lng
+                }
+            };
+            _context.Flights.Add(deliveryFlight);
 
             await _context.SaveChangesAsync();
 
@@ -147,6 +173,7 @@ namespace Projekt_NET.Controllers
                     await _context.SaveChangesAsync();
                 }
             });
+
 
             return RedirectToAction(nameof(Index));
         }
@@ -268,5 +295,53 @@ namespace Projekt_NET.Controllers
         {
             return _context.Packages.Any(e => e.PackageId == id);
         }
+
+        [Authorize]
+        public async Task<IActionResult> DownloadPdf(int id)
+        {
+            var package = await _context.Packages
+                .Include(p => p.Client)
+                .Include(p => p.Drone)
+                .FirstOrDefaultAsync(p => p.PackageId == id);
+
+            if (package == null)
+                return NotFound();
+
+            var pdf = GeneratePackagePdf(package);
+
+            var stream = new MemoryStream();
+            pdf.GeneratePdf(stream);
+            stream.Position = 0;
+
+            return File(stream, "application/pdf", $"Paczka_{package.PackageId}.pdf");
+        }
+
+        private Document GeneratePackagePdf(Package package)
+        {
+            return Document.Create(container =>
+            {
+                container.Page(page =>
+                {
+                    page.Size(PageSizes.A4);
+                    page.Margin(2, Unit.Centimetre);
+                    page.PageColor(Colors.White);
+                    page.DefaultTextStyle(x => x.FontSize(14));
+
+                    page.Header()
+                        .Text($"Szczegóły paczki #{package.PackageId}")
+                        .SemiBold().FontSize(20).FontColor(Colors.Blue.Medium);
+
+                    page.Content().PaddingVertical(10).Column(col =>
+                    {
+                        col.Item().Text($"Nadawca: {package.Client?.Name} {package.Client?.Surname}");
+                        col.Item().Text($"Adres odbioru: {package.PickupAddress}");
+                        col.Item().Text($"Adres dostawy: {package.TargetAddress}");
+                        col.Item().Text($"Waga: {package.Weight ?? 0} kg");
+                        col.Item().Text($"Dron: {(package.Drone != null ? package.Drone.CallSign : "Nieprzypisany")}");
+                    });
+                });
+            });
+        }
+
     }
 }

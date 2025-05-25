@@ -245,6 +245,17 @@ public class MapController : Controller
         return Json(result);
     }
 
+    [HttpPost]
+    public async Task<IActionResult> Stop(int droneId)
+    {
+        var result = await _droneService.StopDrone(droneId);
+        if (!result)
+            return BadRequest("Drone was not moving or not found.");
+
+        return Ok();
+    }
+
+
 }
 
 

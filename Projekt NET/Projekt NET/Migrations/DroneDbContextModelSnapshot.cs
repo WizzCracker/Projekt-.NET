@@ -3,7 +3,6 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
-using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Projekt_NET.Models.System;
 
@@ -12,11 +11,9 @@ using Projekt_NET.Models.System;
 namespace Projekt_NET.Migrations
 {
     [DbContext(typeof(DroneDbContext))]
-    [Migration("20250512134732_flights")]
-    partial class flights
+    partial class DroneDbContextModelSnapshot : ModelSnapshot
     {
-        /// <inheritdoc />
-        protected override void BuildTargetModel(ModelBuilder modelBuilder)
+        protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -209,6 +206,9 @@ namespace Projekt_NET.Migrations
                         .HasColumnType("int");
 
                     b.Property<int?>("FlightPathId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Steps")
                         .HasColumnType("int");
 
                     b.HasKey("FlightId");
