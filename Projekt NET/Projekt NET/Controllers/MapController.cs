@@ -208,41 +208,30 @@ public class MapController : Controller
         if (droneIsInFlight)
             return BadRequest(new { success = false, message = "Drone is already in flight" });
 
-        var districtBoundary = drone.DroneCloud.District.BoundingPoints;
-        var targetPoint = new Coordinate { Latitude = latitude, Longitude = longitude };
+        var districtBoundary = drone.DroneCloud.District.BoundingPoints.ToList();
+        var currentPosition = drone.Coordinate;
+        var targetPosition = new Coordinate { Latitude = latitude, Longitude = longitude };
 
-        bool wasClipped = false;
-        if (!GeoFunctions.IsPointInDistrict(districtBoundary, targetPoint))
+        var (adjustedCoordinate, wasClipped, errorMessage) = _droneService.AdjustCoordinateToDistrictBoundary(
+            districtBoundary,
+            currentPosition,
+            targetPosition);
+
+        if (adjustedCoordinate == null)
         {
-            var intersection = GeoFunctions.FindIntersectionWithDistrictEdge(
-                districtBoundary,
-                drone.Coordinate,
-                targetPoint);
-
-            if (intersection == null)
-            {
-                return BadRequest(new { success = false, message = "Cannot find intersection with district boundary" });
-            }
-
-            latitude = intersection.Latitude;
-            longitude = intersection.Longitude;
-            wasClipped = true;
+            return BadRequest(new { success = false, message = errorMessage });
         }
 
         var flight = new Flight
         {
             DroneId = droneId,
-            DeliveryCoordinates = new Coordinate
-            {
-                Latitude = latitude,
-                Longitude = longitude
-            }
+            DeliveryCoordinates = adjustedCoordinate
         };
 
         _context.Flights.Add(flight);
         await _context.SaveChangesAsync();
 
-        _ = _droneService.MoveDroneAsync(droneId, latitude, longitude);
+        _ = _droneService.MoveDroneAsync(droneId, adjustedCoordinate.Latitude, adjustedCoordinate.Longitude);
 
         return Ok(new
         {
@@ -250,6 +239,7 @@ public class MapController : Controller
             message = wasClipped ? "Cel poza district, lot do granicy." : "Drone move sent."
         });
     }
+
 
 
 

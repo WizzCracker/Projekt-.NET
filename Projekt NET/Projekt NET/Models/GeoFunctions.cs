@@ -65,6 +65,8 @@
             return null;
         }
 
+
+
         public static bool LineSegmentsIntersect(Coordinate p, Coordinate p2, Coordinate q, Coordinate q2, out Coordinate intersection)
         {
             intersection = new Coordinate();
@@ -98,5 +100,7 @@
 
             return false;
         }
+
+
     }
 }
