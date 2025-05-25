@@ -24,5 +24,79 @@
         {
             return angle * Math.PI / 180;
         }
+
+        public static bool IsPointInDistrict(List<Coordinate> district, Coordinate point)
+        {
+            int count = district.Count;
+            bool isInside = false;
+
+            for (int i = 0, j = count - 1; i < count; j = i++)
+            {
+                double xi = district[i].Longitude;
+                double yi = district[i].Latitude;
+                double xj = district[j].Longitude;
+                double yj = district[j].Latitude;
+
+                bool intersects = ((yi > point.Latitude) != (yj > point.Latitude)) &&
+                    (point.Longitude < (xj - xi) * (point.Latitude - yi) / (yj - yi + double.Epsilon) + xi);
+
+                if (intersects)
+                {
+                    isInside = !isInside;
+                }
+            }
+
+            return isInside;
+        }
+
+        public static Coordinate? FindIntersectionWithDistrictEdge(List<Coordinate> district, Coordinate start, Coordinate end)
+        {
+            int count = district.Count;
+
+            for (int i = 0; i < count; i++)
+            {
+                var p1 = district[i];
+                var p2 = district[(i + 1) % count];
+
+                if (LineSegmentsIntersect(start, end, p1, p2, out var intersection))
+                    return intersection;
+            }
+
+            return null;
+        }
+
+        public static bool LineSegmentsIntersect(Coordinate p, Coordinate p2, Coordinate q, Coordinate q2, out Coordinate intersection)
+        {
+            intersection = new Coordinate();
+
+            double dx1 = p2.Longitude - p.Longitude;
+            double dy1 = p2.Latitude - p.Latitude;
+
+            double dx2 = q2.Longitude - q.Longitude;
+            double dy2 = q2.Latitude - q.Latitude;
+
+            double denominator = dx1 * dy2 - dy1 * dx2;
+
+            if (Math.Abs(denominator) < 1e-10)
+                return false;
+
+            double dx = q.Longitude - p.Longitude;
+            double dy = q.Latitude - p.Latitude;
+
+            double t = (dx * dy2 - dy * dx2) / denominator;
+            double u = (dx * dy1 - dy * dx1) / denominator;
+
+            if (t >= 0 && t <= 1 && u >= 0 && u <= 1)
+            {
+                intersection = new Coordinate
+                {
+                    Longitude = p.Longitude + t * dx1,
+                    Latitude = p.Latitude + t * dy1
+                };
+                return true;
+            }
+
+            return false;
+        }
     }
 }
