@@ -396,3 +396,6 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
+/Projekt NET/Projekt NET/Migrations/20250513172237_steps.cs
+/Projekt NET/Projekt NET/Migrations/20250513172237_steps.Designer.cs
+/Projekt NET/Projekt NET/Migrations/DroneDbContextModelSnapshot.cs

@@ -2,57 +2,206 @@
     ViewData["Title"] = "Map";
 }
 
-<h2>Interactive Drone Map</h2>
-
-<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-
 <style>
+    body {
+        display: flex; /* Use flexbox for overall layout */
+        font-family: sans-serif;
+        margin: 0;
+        padding: 0;
+    }
+
+    #map-container { /* New container for map and controls */
+        display: flex;
+        width: 100%; /* Take full width */
+    }
+
     #map {
         height: 600px;
-        width: 100%;
+        width: 75%; /* Adjust width as needed, e.g., 75% for map */
         z-index: 1;
         position: relative;
     }
+
+    #sidebar {
+        width: 25%; /* Adjust width as needed, e.g., 25% for sidebar */
+        padding: 20px;
+        box-sizing: border-box;
+        background-color: #f8f8f8;
+        border-left: 1px solid #eee;
+        display: flex;
+        flex-direction: column;
+        gap: 15px; /* Spacing between elements */
+    }
+
+    /* Existing loading overlay styles */
     #loadingOverlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(255, 255, 255, 0.8);
-    z-index: 9999;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    font-size: 18px;
-    font-family: sans-serif;
-}
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(255, 255, 255, 0.8);
+        z-index: 9999;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        font-size: 18px;
+        font-family: sans-serif;
+    }
 
     .spinner {
-    border: 6px solid #f3f3f3;
-    border-top: 6px solid #3498db;
-    border-radius: 50%;
-    width: 40px;
-    height: 40px;
-    animation: spin 1s linear infinite;
-    margin-bottom: 10px;
-}
+        border: 6px solid #f3f3f3;
+        border-top: 6px solid #3498db;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        animation: spin 1s linear infinite;
+        margin-bottom: 10px;
+    }
 
     @@keyframes spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
+        0% {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
     }
+
+    /* Customer Service Dropdown Styles */
+    .dropdown {
+        position: relative;
+        display: inline-block;
+        width: 100%;
+    }
+
+    .dropdown-button {
+        background-color: #4CAF50; /* Green */
+        color: white;
+        padding: 12px;
+        font-size: 16px;
+        border: none;
+        cursor: pointer;
+        width: 100%;
+        text-align: left;
+        border-radius: 4px;
+    }
+
+    .dropdown-content {
+        display: none;
+        position: absolute;
+        background-color: #f9f9f9;
+        min-width: 300px; /* Adjust width as needed */
+        box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+        z-index: 1000; /* Higher than map, lower than loading overlay */
+        border-radius: 4px;
+        padding: 10px;
+        right: 0; /* Position to the right if in a sidebar */
+        top: 100%; /* Below the button */
+    }
+
+        .dropdown-content.show {
+            display: block;
+        }
+
+    /* Chatbox Styles */
+    #gemini-chatbox {
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 10px;
+        background-color: white;
+        display: flex;
+        flex-direction: column;
+        height: 400px; /* Fixed height for chat scroll */
+        overflow: hidden;
+    }
+
+    #chat-messages {
+        flex-grow: 1;
+        overflow-y: auto; /* Scrollable message area */
+        padding-right: 5px;
+        margin-bottom: 10px;
+    }
+
+    .chat-message {
+        margin-bottom: 8px;
+        padding: 8px 12px;
+        border-radius: 15px;
+        max-width: 80%;
+        word-wrap: break-word;
+    }
+
+    .user-message {
+        background-color: #e0f7fa; /* Light blue */
+        align-self: flex-end; /* Align to the right */
+        margin-left: auto; /* Push to the right */
+    }
+
+    .gemini-message {
+        background-color: #f1f8e9; /* Light green */
+        align-self: flex-start; /* Align to the left */
+        margin-right: auto; /* Push to the left */
+    }
+
+    #chat-input-container {
+        display: flex;
+        border-top: 1px solid #eee;
+        padding-top: 10px;
+    }
+
+    #chat-input {
+        flex-grow: 1;
+        padding: 8px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        margin-right: 5px;
+    }
+
+    #send-button {
+        background-color: #007bff; /* Blue */
+        color: white;
+        padding: 8px 15px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+
+        #send-button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
 
 </style>
 
-<div id="loadingOverlay">
-    <div class="spinner"></div>
-    <p>Loading map data...</p>
-</div>
+<h2>Interactive Drone Map</h2>
 
-<div id="map"></div>
+<div id="map-container">
+    <div id="loadingOverlay">
+        <div class="spinner"></div>
+        <p>Loading map data...</p>
+    </div>
+
+    <div id="map"></div>
+
+    <div id="sidebar">
+        <div class="dropdown">
+            <button class="dropdown-button" id="customerServiceButton">Customer Service</button>
+            <div class="dropdown-content" id="customerServiceDropdown">
+                <div id="gemini-chatbox">
+                    <div id="chat-messages">
+                        <div class="chat-message gemini-message">Hello! How can I assist you with the drone map today?</div>
+                    </div>
+                    <div id="chat-input-container">
+                        <input type="text" id="chat-input" placeholder="Type your message..." />
+                        <button id="send-button">Send</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
 <script src="~/js/map-config.js"></script>
 
@@ -310,7 +459,6 @@
 
         requestAnimationFrame(animate);
     }
-
 
     
     
