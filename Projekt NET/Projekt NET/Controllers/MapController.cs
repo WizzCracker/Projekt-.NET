@@ -191,13 +191,43 @@ public class MapController : Controller
 
     public async Task<IActionResult> Move(int droneId, double latitude, double longitude)
     {
-        bool droneIsInFlight = _context.Flights
-            .Any(f => f.DroneId == droneId && f.ArrivDate == null);
-        if(droneIsInFlight)
+        var drone = await _context.Drones
+            .Include(d => d.Model)
+            .Include(d => d.DroneCloud)
+                .ThenInclude(dc => dc.District)
+                    .ThenInclude(dist => dist.BoundingPoints)
+            .FirstOrDefaultAsync(d => d.DroneId == droneId);
+
+        if (drone == null)
+            return NotFound(new { success = false, message = "Drone not found" });
+
+        if (drone.DroneCloud?.District == null)
+            return BadRequest(new { success = false, message = "Drone is not assigned to any district" });
+
+        bool droneIsInFlight = _context.Flights.Any(f => f.DroneId == droneId && f.ArrivDate == null);
+        if (droneIsInFlight)
+            return BadRequest(new { success = false, message = "Drone is already in flight" });
+
+        var districtBoundary = drone.DroneCloud.District.BoundingPoints;
+        var targetPoint = new Coordinate { Latitude = latitude, Longitude = longitude };
+
+        bool wasClipped = false;
+        if (!GeoFunctions.IsPointInDistrict(districtBoundary, targetPoint))
         {
-            throw new InvalidOperationException("Drone is already in flight");
+            var intersection = GeoFunctions.FindIntersectionWithDistrictEdge(
+                districtBoundary,
+                drone.Coordinate,
+                targetPoint);
+
+            if (intersection == null)
+            {
+                return BadRequest(new { success = false, message = "Cannot find intersection with district boundary" });
+            }
+
+            latitude = intersection.Latitude;
+            longitude = intersection.Longitude;
+            wasClipped = true;
         }
-        
 
         var flight = new Flight
         {
@@ -208,12 +238,20 @@ public class MapController : Controller
                 Longitude = longitude
             }
         };
-        
+
         _context.Flights.Add(flight);
         await _context.SaveChangesAsync();
+
         _ = _droneService.MoveDroneAsync(droneId, latitude, longitude);
-        return RedirectToAction(nameof(Index));
+
+        return Ok(new
+        {
+            success = true,
+            message = wasClipped ? "Cel poza district, lot do granicy." : "Drone move sent."
+        });
     }
+
+
 
     [HttpGet]
     public async Task<IActionResult> GetFlightData(int droneId)

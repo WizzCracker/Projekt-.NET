@@ -62,9 +62,8 @@ namespace Projekt_NET.Controllers
             ViewData["StatusList"] = new SelectList(Enum.GetValues(typeof(DStatus)));
 
             var droneClouds = _context.DroneClouds.ToList();
-
-
             ViewData["DroneCloudId"] = new SelectList(droneClouds, "DroneCloudId", "Name");
+
 
             ViewData["ModelId"] = new SelectList(_context.Models, "ModelId", "Name");
             return View();
@@ -88,7 +87,7 @@ namespace Projekt_NET.Controllers
             ViewData["StatusList"] = new SelectList(Enum.GetValues(typeof(DStatus)));
 
             var droneClouds = _context.DroneClouds
-                .Select(dc => new { DroneCloudId = (int?)dc.DroneCloudId, Name = dc.DroneCloudId.ToString() })
+                .Select(dc => new { DroneCloudId = (int?)dc.DroneCloudId, Name = dc.Name })
                 .ToList();
 
             droneClouds.Insert(0, new { DroneCloudId = (int?)null, Name = "Unassigned" });
@@ -114,7 +113,7 @@ namespace Projekt_NET.Controllers
                 return NotFound();
             }
             ViewData["StatusList"] = new SelectList(Enum.GetValues(typeof(DStatus)));
-            ViewData["DroneCloudId"] = new SelectList(_context.DroneClouds, "DroneCloudId", "DroneCloudId", drone.DroneCloudId);
+            ViewData["DroneCloudId"] = new SelectList(_context.DroneClouds, "DroneCloudId", "Name", drone.DroneCloudId);
             ViewData["ModelId"] = new SelectList(_context.Models, "ModelId", "Name", drone.ModelId);
             return View(drone);
         }
@@ -152,7 +151,7 @@ namespace Projekt_NET.Controllers
                 return RedirectToAction(nameof(Index));
             }
             ViewData["StatusList"] = new SelectList(Enum.GetValues(typeof(DStatus)));
-            ViewData["DroneCloudId"] = new SelectList(_context.DroneClouds, "DroneCloudId", "DroneCloudId", drone.DroneCloudId);
+            ViewData["DroneCloudId"] = new SelectList(_context.DroneClouds, "DroneCloudId", "Name", drone.DroneCloudId);
             ViewData["ModelId"] = new SelectList(_context.Models, "ModelId", "Name", drone.ModelId);
             return View(drone);
         }
