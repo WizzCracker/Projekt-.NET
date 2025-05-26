@@ -283,6 +283,34 @@ public class MapController : Controller
         return Ok();
     }
 
+    public async Task<IActionResult> GetFlightLog(int droneId)
+    {
+        var flights = await _context.Flights
+            .Include(f => f.Drone)
+            .Where(f => f.DroneId == droneId)
+            .ToListAsync(); 
+
+        if (flights == null || !flights.Any())
+        {
+            return NotFound(new { message = "No flights found for this drone." });
+        }
+
+        var result = flights.Select(f => new
+        {
+            f.FlightId,
+            f.DepDate,
+            f.ArrivDate,
+            f.DroneId,
+            f.Steps,
+            Coordinates = new
+            {
+                f.DeliveryCoordinates.Latitude,
+                f.DeliveryCoordinates.Longitude
+            }
+        }).ToList();
+
+        return Json(result);
+    }
 
 }
 

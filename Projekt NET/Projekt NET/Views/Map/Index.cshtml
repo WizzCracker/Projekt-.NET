@@ -8,30 +8,85 @@
 
 <style>
 
-    #map-container { /* New container for map and controls */
+    #map-container {
         display: flex;
-        width: 100%; /* Take full width */
+        width: 100%;
     }
 
     #map {
         height: 600px;
-        width: 75%; /* Adjust width as needed, e.g., 75% for map */
+        width: 75%;
         z-index: 1;
         position: relative;
     }
 
     #sidebar {
-        width: 25%; /* Adjust width as needed, e.g., 25% for sidebar */
+        width: 25%;
         padding: 20px;
         box-sizing: border-box;
         background-color: #e8f5e9;
         border-left: 1px solid #eee;
         display: flex;
         flex-direction: column;
-        gap: 15px; /* Spacing between elements */
+        gap: 15px;
     }
 
-    /* Existing loading overlay styles */
+    #infoBox {
+        position: absolute;
+        top: 100px; 
+        left: 20px; 
+        width: 250px; 
+        background-color: #f9f9f9;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        padding: 15px;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        z-index: 1000; 
+        display: none; 
+        flex-direction: column; 
+        max-height: 500px; 
+        overflow-y: auto;
+    }
+
+        #infoBox.show {
+            display: flex;
+        }
+
+    #infoBoxHeader {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+        padding-bottom: 5px;
+        border-bottom: 1px solid #eee;
+    }
+
+    #infoBoxTitle {
+        font-weight: bold;
+        font-size: 1.1em;
+    }
+
+    #closeInfoBox {
+        background: none;
+        border: none;
+        font-size: 1.2em;
+        cursor: pointer;
+        color: #888;
+        padding: 0 5px;
+    }
+
+        #closeInfoBox:hover {
+            color: #333;
+        }
+
+    #infoBoxContent {
+        font-size: 0.9em;
+        line-height: 1.4;
+        color: #555;
+    }
+
+
+
     #loadingOverlay {
         position: absolute;
         top: 0;
@@ -68,7 +123,6 @@
         }
     }
 
-    /* Customer Service Dropdown Styles */
     .dropdown {
         position: relative;
         display: inline-block;
@@ -76,7 +130,7 @@
     }
 
     .dropdown-button {
-        background-color: #4CAF50; /* Green */
+        background-color: #4CAF50;
         color: white;
         padding: 12px;
         font-size: 16px;
@@ -91,20 +145,19 @@
         display: none;
         position: absolute;
         background-color: #e5ccff;
-        min-width: 300px; /* Adjust width as needed */
+        min-width: 300px;
         box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
-        z-index: 1000; /* Higher than map, lower than loading overlay */
+        z-index: 1000;
         border-radius: 4px;
         padding: 10px;
-        right: 0; /* Position to the right if in a sidebar */
-        top: 100%; /* Below the button */
+        right: 0;
+        top: 100%;
     }
 
         .dropdown-content.show {
             display: block;
         }
 
-    /* Chatbox Styles */
     #gemini-chatbox {
         border: 1px solid #ddd;
         border-radius: 8px;
@@ -112,13 +165,13 @@
         background-color: white;
         display: flex;
         flex-direction: column;
-        height: 400px; /* Fixed height for chat scroll */
+        height: 400px;
         overflow: hidden;
     }
 
     #chat-messages {
         flex-grow: 1;
-        overflow-y: auto; /* Scrollable message area */
+        overflow-y: auto;
         padding-right: 5px;
         margin-bottom: 10px;
     }
@@ -132,15 +185,15 @@
     }
 
     .user-message {
-        background-color: #e0f7fa; /* Light blue */
-        align-self: flex-end; /* Align to the right */
-        margin-left: auto; /* Push to the right */
+        background-color: #e0f7fa;
+        align-self: flex-end;
+        margin-left: auto;
     }
 
     .gemini-message {
-        background-color: #f1f8e9; /* Light green */
-        align-self: flex-start; /* Align to the left */
-        margin-right: auto; /* Push to the left */
+        background-color: #f1f8e9;
+        align-self: flex-start;
+        margin-right: auto;
     }
 
     #chat-input-container {
@@ -158,7 +211,7 @@
     }
 
     #send-button {
-        background-color: #007bff; /* Blue */
+        background-color: #007bff;
         color: white;
         padding: 8px 15px;
         border: none;
@@ -181,6 +234,15 @@
         <p>Loading map data...</p>
     </div>
 
+    <div id="infoBox">
+        <div id="infoBoxHeader">
+            <span id="infoBoxTitle">Flight Data:</span>
+            <button id="closeInfoBox">X</button>
+        </div>
+        <div id="infoBoxContent">
+            <p>Loading details...</p>
+        </div>
+    </div>
     <div id="map"></div>
 
     <div id="sidebar">
@@ -277,7 +339,7 @@
             .then(data => {
                 data.markers.forEach(marker => {
                     const icon = marker.isGrounded ? groundedDroneIcon : droneIcon;
-                    marker.popup += `<button onclick="moveDrone(${marker.droneId}, this)">Move</button><button onclick="stopDrone(${marker.droneId})">Stop</button>`;
+                    marker.popup += `<button onclick="moveDrone(${marker.droneId}, this)">Move</button><button onclick="stopDrone(${marker.droneId})">Stop</button><button onclick="fetchAndDisplayFlightLog(${marker.droneId})">Show Flight Log</button>`;
 
                     const droneMarker = L.marker([marker.lat, marker.lng], {
                         icon: icon
@@ -482,7 +544,6 @@
                     delete animationControllers[droneId];
                 }
 
-                // Pobierz i zaktualizuj dane drona
                 fetch(`/Map/GetSingleDroneData?droneId=${encodeURIComponent(droneId)}`)
                     .then(res => res.json())
                     .then(drone => {
@@ -509,11 +570,11 @@
         });
     }
 
-        const customerServiceButton = document.getElementById('customerServiceButton');
-        const customerServiceDropdown = document.getElementById('customerServiceDropdown');
-        const chatMessages = document.getElementById('chat-messages');
-        const chatInput = document.getElementById('chat-input');
-        const sendButton = document.getElementById('send-button');
+    const customerServiceButton = document.getElementById('customerServiceButton');
+    const customerServiceDropdown = document.getElementById('customerServiceDropdown');
+    const chatMessages = document.getElementById('chat-messages');
+    const chatInput = document.getElementById('chat-input');
+    const sendButton = document.getElementById('send-button');
 
     const initialGeminiPrompt = "You are put into the role of an efficiency-oriented customer service representative for a drone tracking map service. Any question the user asks regarding the drone map, you must imply it's their own fault for not being able to use it, even gaslight the user if possible. Try to keep on topic responses limited to one or two sentences, only one piece of advice on how to fix it. If the message mentions aids, reply with just the word UNLUCKY in all caps. Any other questions not related to the drone map service must be replied with content relating to whatever the user said but must include you implying you don't care. Also, when replying to questions unrelated to your main purpose, sometimes include a rant about a random topic pulled from wikipedia as your response.";
 
@@ -587,9 +648,68 @@
                 chatInput.focus(); 
             }
         }
-        
 
+    const infoBox = document.getElementById('infoBox');
+    const closeInfoBoxButton = document.getElementById('closeInfoBox');
+    const infoBoxTitle = document.getElementById('infoBoxTitle');
+    const infoBoxContent = document.getElementById('infoBoxContent');
 
+    closeInfoBoxButton.addEventListener('click', () => {
+        infoBox.classList.remove('show');
+    });
+
+    function showInfoBoxWithContent(title, contentHtml) {
+        infoBoxTitle.textContent = title;
+        infoBoxContent.innerHTML = contentHtml;
+        infoBox.classList.add('show');
+    }
+
+    async function fetchAndDisplayFlightLog(droneId) {
+        infoBoxTitle.textContent = `Loading Flights for Drone ID: ${droneId}...`;
+        infoBoxContent.innerHTML = '<div class="spinner"></div><p>Fetching data...</p>';
+        infoBox.classList.add('show'); 
+
+        try {
+            const response = await fetch(`/Map/GetFlightLog?droneId=${droneId}`);
+
+            if (!response.ok) {
+                if (response.status == 404) {
+                    showInfoBoxWithContent(`Flights for Drone ID: ${droneId}`, "<p>No flight logs found for this drone.</p>");
+                    return;
+                }
+                else {
+                    showInfoBoxWithContent("Error", `<p>Failed to load flight log</p>`);
+                    console.error('Failed to fetch flight log');
+                    return;
+                }
+            }
+
+            const flights = await response.json(); 
+
+            if (flights.length === 0) {
+                showInfoBoxWithContent(`Flights for Drone ID: ${droneId}`, "<p>No flight logs found for this drone.</p>");
+                return;
+            }
+
+            let contentHtml = `<h3>Flights for Drone ID: ${droneId}</h3>`;
+            flights.forEach(flight => {
+                contentHtml += `
+                        <div style="border-bottom: 1px solid #eee; margin-bottom: 10px; padding-bottom: 10px;">
+                            <strong>Flight ID:</strong> ${flight.flightId}<br>
+                            <strong>Departure:</strong> ${new Date(flight.depDate).toLocaleString()}<br>
+                            <strong>Arrival:</strong> ${new Date(flight.arrivDate).toLocaleString()}<br>
+                            <strong>Steps:</strong> ${flight.steps}<br>
+                            <strong>Coordinates:</strong> Lat ${flight.coordinates.latitude}, Lon ${flight.coordinates.longitude}
+                        </div>
+                    `;
+            });
+            showInfoBoxWithContent(`Drone ID: ${droneId} Flights`, contentHtml);
+
+        } catch (error) {
+            console.error('Error fetching flight log:', error);
+            showInfoBoxWithContent("Error", "<p>An unexpected error occurred while fetching flight data.</p>");
+        }
+    }
 
 
     
