@@ -88,6 +88,25 @@ namespace Projekt_NET.Services
             return true;
         }
 
+        public (Coordinate adjustedCoordinate, bool wasClipped, string? errorMessage) AdjustCoordinateToDistrictBoundary(
+        List<Coordinate> districtBoundary,
+        Coordinate currentPosition,
+        Coordinate targetPosition)
+        {
+            if (GeoFunctions.IsPointInDistrict(districtBoundary, targetPosition))
+            {
+                return (targetPosition, false, null);
+            }
+
+            var intersection = GeoFunctions.FindIntersectionWithDistrictEdge(districtBoundary, currentPosition, targetPosition);
+
+            if (intersection == null)
+            {
+                return (null, false, "Cannot find intersection with district boundary");
+            }
+
+            return (intersection, true, null);
+        }
 
     }
 

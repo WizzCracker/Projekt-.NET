@@ -191,29 +191,57 @@ public class MapController : Controller
 
     public async Task<IActionResult> Move(int droneId, double latitude, double longitude)
     {
-        bool droneIsInFlight = _context.Flights
-            .Any(f => f.DroneId == droneId && f.ArrivDate == null);
-        if(droneIsInFlight)
+        var drone = await _context.Drones
+            .Include(d => d.Model)
+            .Include(d => d.DroneCloud)
+                .ThenInclude(dc => dc.District)
+                    .ThenInclude(dist => dist.BoundingPoints)
+            .FirstOrDefaultAsync(d => d.DroneId == droneId);
+
+        if (drone == null)
+            return NotFound(new { success = false, message = "Drone not found" });
+
+        if (drone.DroneCloud?.District == null)
+            return BadRequest(new { success = false, message = "Drone is not assigned to any district" });
+
+        bool droneIsInFlight = _context.Flights.Any(f => f.DroneId == droneId && f.ArrivDate == null);
+        if (droneIsInFlight)
+            return BadRequest(new { success = false, message = "Drone is already in flight" });
+
+        var districtBoundary = drone.DroneCloud.District.BoundingPoints.ToList();
+        var currentPosition = drone.Coordinate;
+        var targetPosition = new Coordinate { Latitude = latitude, Longitude = longitude };
+
+        var (adjustedCoordinate, wasClipped, errorMessage) = _droneService.AdjustCoordinateToDistrictBoundary(
+            districtBoundary,
+            currentPosition,
+            targetPosition);
+
+        if (adjustedCoordinate == null)
         {
-            throw new InvalidOperationException("Drone is already in flight");
+            return BadRequest(new { success = false, message = errorMessage });
         }
-        
 
         var flight = new Flight
         {
             DroneId = droneId,
-            DeliveryCoordinates = new Coordinate
-            {
-                Latitude = latitude,
-                Longitude = longitude
-            }
+            DeliveryCoordinates = adjustedCoordinate
         };
-        
+
         _context.Flights.Add(flight);
         await _context.SaveChangesAsync();
-        _ = _droneService.MoveDroneAsync(droneId, latitude, longitude);
-        return RedirectToAction(nameof(Index));
+
+        _ = _droneService.MoveDroneAsync(droneId, adjustedCoordinate.Latitude, adjustedCoordinate.Longitude);
+
+        return Ok(new
+        {
+            success = true,
+            message = wasClipped ? "Cel poza district, lot do granicy." : "Drone move sent."
+        });
     }
+
+
+
 
     [HttpGet]
     public async Task<IActionResult> GetFlightData(int droneId)

@@ -23,6 +23,18 @@ namespace Projekt_NET.Models.System
         {
             base.OnModelCreating(modelBuilder);
 
+            modelBuilder.Entity<Flight>()
+               .HasOne(f => f.Drone)
+               .WithMany()
+               .HasForeignKey(f => f.DroneId)
+               .OnDelete(DeleteBehavior.SetNull);
+
+            modelBuilder.Entity<Package>()
+               .HasOne(p => p.Drone)
+               .WithMany()
+               .HasForeignKey(p => p.DroneId)
+               .OnDelete(DeleteBehavior.SetNull);
+
             modelBuilder.Entity<Drone>()
             .OwnsOne(d => d.Coordinate);
 
