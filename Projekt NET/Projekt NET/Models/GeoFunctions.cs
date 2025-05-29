@@ -79,7 +79,9 @@
 
             double denominator = dx1 * dy2 - dy1 * dx2;
 
-            if (Math.Abs(denominator) < 1e-10)
+            const double epsilon = 1e-9;
+
+            if (Math.Abs(denominator) < epsilon)
                 return false;
 
             double dx = q.Longitude - p.Longitude;
@@ -88,8 +90,12 @@
             double t = (dx * dy2 - dy * dx2) / denominator;
             double u = (dx * dy1 - dy * dx1) / denominator;
 
-            if (t >= 0 && t <= 1 && u >= 0 && u <= 1)
+            if (t >= -epsilon && t <= 1 + epsilon && u >= -epsilon && u <= 1 + epsilon)
             {
+                // Przyciągnięcie wartości t i u do zakresu [0,1], jeśli są minimalnie poza nim
+                t = Math.Clamp(t, 0, 1);
+                u = Math.Clamp(u, 0, 1);
+
                 intersection = new Coordinate
                 {
                     Longitude = p.Longitude + t * dx1,
@@ -100,6 +106,8 @@
 
             return false;
         }
+
+        
 
 
     }

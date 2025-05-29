@@ -196,38 +196,17 @@ namespace Projekt_NET.Controllers
             return _context.Drones.Any(e => e.DroneId == id);
         }
 
-
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Move(int droneId, double latitude, double longitude)
         {
+            _ = _droneService.HandleCrossDistrictFlightAsync(droneId, latitude, longitude);
 
-
-            bool droneIsInFlight = _context.Flights
-            .Any(f => f.DroneId == droneId && f.ArrivDate == null);
-            if (droneIsInFlight)
-            {
-                TempData["Error"] = "Drone is already in flight!";
-                return RedirectToAction(nameof(Edit), new { id = droneId });
-            }
-
-            _ = _droneService.MoveDroneAsync(droneId, latitude, longitude);
-
-            var flight = new Flight
-            {
-                DroneId = droneId,
-                DeliveryCoordinates = new Coordinate
-                {
-                    Latitude = latitude,
-                    Longitude = longitude
-                }
-            };
-
-            _context.Flights.Add(flight);
-            await _context.SaveChangesAsync();
-
-            return RedirectToAction(nameof(Edit), new { id = droneId });
+            return RedirectToAction(nameof(Index));
         }
+
+
+
 
     }
 }
