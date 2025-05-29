@@ -107,7 +107,43 @@
             return false;
         }
 
-        
+
+        public static Coordinate MovePointTowards(Coordinate from, Coordinate to, double meters)
+        {
+            const double EarthRadius = 6371000; // metry
+            var bearing = Math.Atan2(
+                to.Longitude - from.Longitude,
+                to.Latitude - from.Latitude
+            );
+
+            double delta = meters / EarthRadius;
+
+            var lat = from.Latitude + delta * Math.Cos(bearing) * (180 / Math.PI);
+            var lng = from.Longitude + delta * Math.Sin(bearing) * (180 / Math.PI) / Math.Cos(from.Latitude * Math.PI / 180);
+
+            return new Coordinate
+            {
+                Latitude = lat,
+                Longitude = lng
+            };
+        }
+
+
+        public static Coordinate CalculateCentroid(List<Coordinate> points)
+        {
+            double lat = 0, lng = 0;
+            foreach (var pt in points)
+            {
+                lat += pt.Latitude;
+                lng += pt.Longitude;
+            }
+
+            return new Coordinate
+            {
+                Latitude = lat / points.Count,
+                Longitude = lng / points.Count
+            };
+        }
 
 
     }
