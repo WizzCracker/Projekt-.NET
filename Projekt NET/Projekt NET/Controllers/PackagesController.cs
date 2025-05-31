@@ -343,5 +343,29 @@ namespace Projekt_NET.Controllers
             });
         }
 
+        [HttpGet]
+        [Route("GetDistance")]
+        public async Task<IActionResult> GetDistance(string origin, string destination)
+        {
+            if (string.IsNullOrWhiteSpace(origin) || string.IsNullOrWhiteSpace(destination))
+                return BadRequest("Invalid addresses.");
+
+            try
+            {
+                var originDecoded = await _droneService.GeocodeAddressAsync(origin);
+                var destinationDecoded = await _droneService.GeocodeAddressAsync(destination);
+                var distance = GeoFunctions.HaversineDistance(
+                        originDecoded.Value.lat,
+                        originDecoded.Value.lng,
+                        destinationDecoded.Value.lat,
+                        destinationDecoded.Value.lng);
+                return Json(distance);
+            }
+
+            catch (Exception)
+            {
+                return Json(0);
+            }
+        }
     }
 }
