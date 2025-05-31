@@ -141,7 +141,6 @@ namespace Projekt_NET.Services
 
             if (GeoFunctions.IsPointInDistrict(currentDistrict.BoundingPoints, targetPosition))
             {
-                // Lot wewnątrz dystryktu - jeden flight do celu
                 var flight = new Flight
                 {
                     DroneId = droneId,
@@ -158,7 +157,7 @@ namespace Projekt_NET.Services
                 if (intersection == null)
                     throw new InvalidOperationException("Nie udało się znaleźć punktu przecięcia z granicą dystryktu.");
 
-                // Lot pierwszego drona do punktu przecięcia
+
                 var flight1 = new Flight
                 {
                     DroneId = droneId,
@@ -169,34 +168,53 @@ namespace Projekt_NET.Services
 
                 var firstDroneMoveTask = MoveDroneAsync(droneId, intersection.Latitude, intersection.Longitude);
 
-                // Znajdź dystrykt docelowy i drona w nim
-                var nextDistrict = allDistricts.FirstOrDefault(d => d.DistrictId != currentDistrict.DistrictId && GeoFunctions.IsPointInDistrict(d.BoundingPoints, intersection));
+                var districtCandidate = allDistricts
+                    .Where(d => d.DistrictId != currentDistrict.DistrictId)
+                    .FirstOrDefault(d => GeoFunctions.IsPointInDistrict(d.BoundingPoints, GeoFunctions.MovePointTowards(intersection, GeoFunctions.CalculateCentroid(d.BoundingPoints), 100)));
+
+                if (districtCandidate == null)
+                {
+                    // Fallback: znajdź dystrykt najbliższy do punktu intersection
+                    districtCandidate = allDistricts
+                        .Where(d => d.DistrictId != currentDistrict.DistrictId)
+                        .OrderBy(d => GeoFunctions.DistanceToDistrictBoundary(d.BoundingPoints, intersection))
+                        .FirstOrDefault();
+
+                    if (districtCandidate == null)
+                        throw new InvalidOperationException("Nie znaleziono dystryktu dla punktu przecięcia ani najbliższego dystryktu.");
+                }
+
+                var nextDistrict = districtCandidate;
+
                 if (nextDistrict == null)
                     throw new InvalidOperationException("Nie znaleziono dystryktu dla punktu przecięcia.");
 
+                // Pobierz wszystkie aktywne drony oprócz pierwszego
                 var activeDrones = await context.Drones
                     .Include(d => d.Model)
-                    .Where(d => d.Status == DStatus.Active)
+                    .Include(d => d.DroneCloud)  // uwzględnij powiązanie z DroneCloud
+                    .Where(d => d.Status == DStatus.Active && d.DroneId != droneId)
                     .ToListAsync();
 
+                // Wybierz drugiego drona, który jest przypisany do nextDistrict przez DroneCloud
                 var secondDrone = activeDrones
-                    .FirstOrDefault(d => GeoFunctions.IsPointInDistrict(nextDistrict.BoundingPoints, d.Coordinate));
+                    .FirstOrDefault(d => d.DroneCloud != null && d.DroneCloud.DistrictId == nextDistrict.DistrictId);
 
                 if (secondDrone == null)
                     throw new InvalidOperationException("Brak dostępnego drona w następnym dystrykcie.");
 
+
+
+                
                 var rawIntersection = GeoFunctions.FindIntersectionWithDistrictEdge(nextDistrict.BoundingPoints, secondDrone.Coordinate, intersection);
                 if (rawIntersection == null)
                     throw new InvalidOperationException("Nie udało się znaleźć punktu przecięcia z granicą dystryktu.");
 
-                // Przesunięcie 10 m w stronę środka dystryktu
-                // Środek obliczony jako centroid (uśredniony punkt dystryktu)
                 var districtCenter = GeoFunctions.CalculateCentroid(nextDistrict.BoundingPoints);
 
-                var intersection2 = GeoFunctions.MovePointTowards(rawIntersection, districtCenter, 500);
+                var intersection2 = GeoFunctions.MovePointTowards(rawIntersection, districtCenter, 1000);
 
 
-                // Lot drugiego drona od punktu przecięcia do celu
                 var flight2 = new Flight
                 {
                     DroneId = secondDrone.DroneId,
@@ -208,9 +226,9 @@ namespace Projekt_NET.Services
 
                 var secondDroneMoveTask = MoveDroneAsync(secondDrone.DroneId, intersection2.Latitude, intersection2.Longitude);
 
-                var results = await Task.WhenAll(firstDroneMoveTask, secondDroneMoveTask);
+                await Task.WhenAll(firstDroneMoveTask, secondDroneMoveTask);
 
-                return results.All(r => r);
+                return await HandleCrossDistrictFlightAsync(secondDrone.DroneId, targetLat, targetLng);
             }
         }
 

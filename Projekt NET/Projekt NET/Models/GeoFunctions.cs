@@ -144,6 +144,49 @@
                 Longitude = lng / points.Count
             };
         }
+        public static double DistanceToDistrictBoundary(List<Coordinate> district, Coordinate point)
+        {
+            double minDistance = double.MaxValue;
+
+            for (int i = 0; i < district.Count; i++)
+            {
+                var p1 = district[i];
+                var p2 = district[(i + 1) % district.Count];
+
+                double dist = DistancePointToSegment(point, p1, p2);
+                if (dist < minDistance)
+                    minDistance = dist;
+            }
+
+            return minDistance;
+        }
+
+        private static double DistancePointToSegment(Coordinate p, Coordinate v, Coordinate w)
+        {
+            // Przekształcenie do wektora na płaszczyźnie
+            double lat1 = v.Latitude;
+            double lon1 = v.Longitude;
+            double lat2 = w.Latitude;
+            double lon2 = w.Longitude;
+
+            double latP = p.Latitude;
+            double lonP = p.Longitude;
+
+            // obliczanie długości segmentu kwadrat (w stopniach)
+            double l2 = Math.Pow(lat2 - lat1, 2) + Math.Pow(lon2 - lon1, 2);
+            if (l2 == 0.0) return HaversineDistance(latP, lonP, lat1, lon1) * 1000; // v == w, odległość punktu do v
+
+            // parametry t określające projekcję punktu na segment linii
+            double t = ((latP - lat1) * (lat2 - lat1) + (lonP - lon1) * (lon2 - lon1)) / l2;
+            t = Math.Max(0, Math.Min(1, t));
+
+            // punkt projekcji na segmencie
+            double projLat = lat1 + t * (lat2 - lat1);
+            double projLon = lon1 + t * (lon2 - lon1);
+
+            // odległość punktu od punktu projekcji (w metrach)
+            return HaversineDistance(latP, lonP, projLat, projLon) * 1000;
+        }
 
 
     }

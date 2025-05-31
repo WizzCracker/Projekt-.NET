@@ -116,7 +116,6 @@ namespace Projekt_NET.Controllers
                     return View(package);
                 }
 
-
                 drone = freeDrones
                     .OrderBy(d => GeoFunctions.HaversineDistance(
                         d.Coordinate.Latitude,
@@ -135,48 +134,18 @@ namespace Projekt_NET.Controllers
             }
 
             _context.Packages.Add(package);
-
-            var pickupFlight = new Flight
-            {
-                DroneId = drone.DroneId,
-                DeliveryCoordinates = new Coordinate
-                {
-                    Latitude = pickupCoords.Value.lat,
-                    Longitude = pickupCoords.Value.lng
-                }
-            };
-            _context.Flights.Add(pickupFlight);
-
-            var deliveryFlight = new Flight
-            {
-                DroneId = drone.DroneId,
-                DeliveryCoordinates = new Coordinate
-                {
-                    Latitude = deliveryCoords.Value.lat,
-                    Longitude = deliveryCoords.Value.lng
-                }
-            };
-            _context.Flights.Add(deliveryFlight);
-
             await _context.SaveChangesAsync();
 
             _ = Task.Run(async () =>
             {
-                await _droneService.MoveDroneAsync(drone.DroneId, pickupCoords.Value.lat, pickupCoords.Value.lng);
-                await _droneService.MoveDroneAsync(drone.DroneId, deliveryCoords.Value.lat, deliveryCoords.Value.lng);
-
-                var droneToUpdate = await _context.Drones.FindAsync(drone.DroneId);
-                if (droneToUpdate != null)
-                {
-                    droneToUpdate.Status = DStatus.Active;
-                    _context.Drones.Update(droneToUpdate);
-                    await _context.SaveChangesAsync();
-                }
+                await _droneService.HandleCrossDistrictFlightAsync(drone.DroneId, pickupCoords.Value.lat, pickupCoords.Value.lng);
+                
+                await _droneService.HandleCrossDistrictFlightAsync(drone.DroneId, deliveryCoords.Value.lat, deliveryCoords.Value.lng);
             });
-
 
             return RedirectToAction(nameof(Index));
         }
+
 
 
 
