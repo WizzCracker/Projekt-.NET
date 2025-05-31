@@ -8,24 +8,62 @@
 
 <h2>Zamów paczkę</h2>
 
-<form asp-action="Create">
-    <div class="form-group">
-        <label asp-for="Weight" class="control-label"></label>
-        <input asp-for="Weight" class="form-control" />
-        <span asp-validation-for="Weight" class="text-danger"></span>
+<div class="row">
+    <div class="col-md-4">
+        <div class="card p-3 mb-3 border shadow-sm">
+            <h4>Szacowany koszt</h4>
+            <p id="projectedCost">0.00 zł</p>
+        </div>
     </div>
-    <div class="form-group">
-        <label asp-for="PickupAddress" class="control-label"></label>
-        <input asp-for="PickupAddress" class="form-control" />
-        <span asp-validation-for="PickupAddress" class="text-danger"></span>
+
+    <div class="col-md-8">
+        <form asp-action="Create">
+            <div class="form-group">
+                <label asp-for="Weight" class="control-label"></label>
+                <input asp-for="Weight" class="form-control" id="Weight" />
+                <span asp-validation-for="Weight" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="PickupAddress" class="control-label"></label>
+                <input asp-for="PickupAddress" class="form-control" id="PickupAddress" />
+                <span asp-validation-for="PickupAddress" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="TargetAddress" class="control-label"></label>
+                <input asp-for="TargetAddress" class="form-control" id="TargetAddress" />
+                <span asp-validation-for="TargetAddress" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Create" class="btn btn-primary" />
+            </div>
+        </form>
     </div>
-    <div class="form-group">
-        <label asp-for="TargetAddress" class="control-label"></label>
-        <input asp-for="TargetAddress" class="form-control" />
-        <span asp-validation-for="TargetAddress" class="text-danger"></span>
-    </div>
-    <div class="form-group">
-        <input type="submit" value="Create" class="btn btn-primary" />
-    </div>
-</form>
+</div>
+
+@section Scripts {
+    <script>
+
+        async function calculateCost() {
+            const weight = parseFloat(document.getElementById("Weight").value) || 0;
+            const pickup = document.getElementById("PickupAddress").value.trim();
+            const target = document.getElementById("TargetAddress").value.trim();
+            if (pickup && target) {
+                const response = await fetch(`/Paczki/GetDistance?origin=${encodeURIComponent(pickup)}&destination=${encodeURIComponent(target)}`);
+                if (!response.ok) throw new Error("API error");
+                const distance = await response.json();
+                const cost = (20 + weight * 2) + (distance);
+                document.getElementById("projectedCost").innerText = cost.toFixed(2) + " zł";
+            }
+            else {
+                const cost = (20 + weight * 2);
+                document.getElementById("projectedCost").innerText = cost.toFixed(2) + " zł";
+            }
+        }
+
+        document.getElementById("Weight").addEventListener("input", calculateCost);
+        document.getElementById("PickupAddress").addEventListener("input", calculateCost);
+        document.getElementById("TargetAddress").addEventListener("input", calculateCost);
+    </script>
+}
+
 
