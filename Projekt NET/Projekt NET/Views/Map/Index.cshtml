@@ -224,6 +224,38 @@
             cursor: not-allowed;
         }
 
+    #cmdWindow {
+        display: none;
+        position: fixed;
+        top: 10%;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 600px;
+        height: 400px;
+        background-color: #111;
+        color: #0f0;
+        font-family: monospace;
+        padding: 20px;
+        box-shadow: 0 0 20px #0f0;
+        z-index: 9999;
+        border-radius: 8px;
+        overflow-y: auto;
+    }
+
+    #cmdClose {
+        position: absolute;
+        top: 8px;
+        right: 12px;
+        color: #f00;
+        cursor: pointer;
+        font-weight: bold;
+        font-size: 20px;
+    }
+
+    .line {
+        margin: 4px 0;
+    }
+
 </style>
 
 <h2>Interactive Drone Map</h2>
@@ -261,6 +293,11 @@
             </div>
         </div>
     </div>
+</div>
+
+<div id="cmdWindow">
+    <div id="cmdClose" onclick="closeCmdWindow()">✖</div>
+    <div id="cmdOutput"></div>
 </div>
 
 <script src="~/js/map-config.js"></script>
@@ -339,7 +376,7 @@
             .then(data => {
                 data.markers.forEach(marker => {
                     const icon = marker.isGrounded ? groundedDroneIcon : droneIcon;
-                    marker.popup += `<button onclick="moveDrone(${marker.droneId}, this)">Move</button><button onclick="stopDrone(${marker.droneId})">Stop</button><button onclick="fetchAndDisplayFlightLog(${marker.droneId})">Show Flight Log</button>`;
+                    marker.popup += `<button onclick="moveDrone(${marker.droneId}, this)">Move</button><button onclick="stopDrone(${marker.droneId})">Stop</button><button onclick="fetchAndDisplayFlightLog(${marker.droneId})">Show Flight Log</button><br><button onclick="runDiagnostic(${marker.droneId})">Run Drone Diagnostic</button>`;
 
                     const droneMarker = L.marker([marker.lat, marker.lng], {
                         icon: icon
@@ -444,6 +481,8 @@
                 if (drone.status !== "Inactive" && !drone.isGrounded) {
                     drone.popup += `<button onclick="moveDrone(${marker.droneId}, this)">Move</button>`;
                     drone.popup += `<button onclick="stopDrone(${marker.droneId})">Stop</button>`;
+                    drone.popup += `<button onclick="fetchAndDisplayFlightLog(${marker.droneId})" > Show Flight Log < /button>`;
+                    drone.popup += `<br><button onclick="runDiagnostic(${marker.droneId})">Run Drone Diagnostic</button>`
                 }
                 marker.bindPopup(drone.popup, { closeOnClick: false });
     });
@@ -693,7 +732,8 @@
 
             let contentHtml = `<h3>Flights for Drone ID: ${droneId}</h3>`;
             flights.forEach(flight => {
-                contentHtml += `
+                if (flight.arrivDate) {
+                    contentHtml += `
                         <div style="border-bottom: 1px solid #eee; margin-bottom: 10px; padding-bottom: 10px;">
                             <strong>Flight ID:</strong> ${flight.flightId}<br>
                             <strong>Departure:</strong> ${new Date(flight.depDate).toLocaleString()}<br>
@@ -702,6 +742,18 @@
                             <strong>Coordinates:</strong> Lat ${flight.coordinates.latitude}, Lon ${flight.coordinates.longitude}
                         </div>
                     `;
+                }
+                else {
+                    contentHtml += `
+                            <div style="border-bottom: 1px solid #eee; margin-bottom: 10px; padding-bottom: 10px;">
+                                <strong>Flight ID:</strong> ${flight.flightId}<br>
+                                <strong>Departure:</strong> ${new Date(flight.depDate).toLocaleString()}<br>
+                                <strong>Arrival:</strong> In progress<br>
+                                <strong>Steps:</strong> ${flight.steps}<br>
+                                <strong>Coordinates:</strong> Lat ${flight.coordinates.latitude}, Lon ${flight.coordinates.longitude}
+                            </div>
+                        `;
+                }
             });
             showInfoBoxWithContent(`Drone ID: ${droneId} Flights`, contentHtml);
 
@@ -711,7 +763,82 @@
         }
     }
 
+    const diagnosticLines = [
+        "Initializing drone interface...",
+        "Connecting to drone...",
+        "Connection established.",
+        "Running diagnostic suite...",
+        "Checking motors...",
+        "Motor status: OK",
+        "Checking sensors...",
+        "Sensor suite: OK",
+        "Running structural integrity check...",
+        "Analyzing frame...",
+        "Frame stress test complete.",
+        "Finalizing report..."
+    ];
 
+    async function runDiagnostic(droneId) {
+        const output = document.getElementById("cmdOutput");
+        const windowEl = document.getElementById("cmdWindow");
+        output.innerHTML = "";
+        windowEl.style.display = "block";
+
+        let index = 0;
+        const interval = setInterval(() => {
+            if (index < diagnosticLines.length) {
+                const line = document.createElement("div");
+                line.className = "line";
+                line.textContent = `> ${diagnosticLines[index]}`;
+                output.appendChild(line);
+                output.scrollTop = output.scrollHeight;
+                index++;
+            } else {
+                clearInterval(interval);
+                setTimeout(async () => {
+                    const response = await fetch(`/Map/GetFlightLog?droneId=${droneId}`);
+                    const flights = await response.json();
+                    let integrity = 100;
+                    let prev = null;
+                    flights.forEach(flight => {
+                        if (prev) {
+                            integrity -= Math.floor(haversineDistance(prev.coordinates.latitude, prev.coordinates.longitude, flight.coordinates.latitude, flight.coordinates.longitude) / 100);
+                        }
+                        else{
+                            integrity -= Math.floor(haversineDistance(52, 21, flight.coordinates.latitude, flight.coordinates.longitude) / 40);
+                        }
+                        prev = flight;
+                    });
+                    const result = document.createElement("div");
+                    result.className = "line";
+                    result.innerHTML = `> <span style="color:#0ff;">Drone number ${droneId} Structural Integrity: ${integrity}%</span>`;
+                    output.appendChild(result);
+                    output.scrollTop = output.scrollHeight;
+                }, 500);
+            }
+        }, 1000 + Math.floor(Math.random() * 2000));
+    }
+
+    function closeCmdWindow() {
+        document.getElementById("cmdWindow").style.display = "none";
+    }
+
+    function haversineDistance(lat1, lon1, lat2, lon2) {
+        const toRad = angle => (angle * Math.PI) / 180;
+
+        const R = 6371; 
+        const dLat = toRad(lat2 - lat1);
+        const dLon = toRad(lon2 - lon1);
+
+        const a =
+            Math.sin(dLat / 2) ** 2 +
+            Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+            Math.sin(dLon / 2) ** 2;
+
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+        return R * c; 
+    }
     
 </script>
 
