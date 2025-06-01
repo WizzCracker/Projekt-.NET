@@ -133,15 +133,18 @@ namespace Projekt_NET.Controllers
                 return View(package);
             }
 
+
             _context.Packages.Add(package);
             await _context.SaveChangesAsync();
+
 
             _ = Task.Run(async () =>
             {
                 await _droneService.HandleCrossDistrictFlightAsync(drone.DroneId, pickupCoords.Value.lat, pickupCoords.Value.lng);
-                
-                await _droneService.HandleCrossDistrictFlightAsync(drone.DroneId, deliveryCoords.Value.lat, deliveryCoords.Value.lng);
+
+                await _droneService.HandleCrossDistrictFlightAsync(drone.DroneId, deliveryCoords.Value.lat, deliveryCoords.Value.lng, package.PackageId);
             });
+
 
             return RedirectToAction(nameof(Index));
         }
@@ -276,7 +279,22 @@ namespace Projekt_NET.Controllers
             if (package == null)
                 return NotFound();
 
-            var pdf = GeneratePackagePdf(package);
+            var delivery = await _context.Deliveries
+                .Include(d => d.FlightPath)
+                    .ThenInclude(fp => fp.FlightList)
+                        .ThenInclude(f => f.Drone)
+                .FirstOrDefaultAsync(d => d.PackageId == package.PackageId);
+
+            var logs = new List<DeliveryLog>();
+            if (delivery != null)
+            {
+                logs = await _context.DeliveryLogs
+                    .Where(l => l.DeliveryId == delivery.DeliveryId)
+                    .ToListAsync();
+            }
+
+            var pdf = GeneratePackagePdf(package, delivery, logs);
+
 
             var stream = new MemoryStream();
             pdf.GeneratePdf(stream);
@@ -285,7 +303,7 @@ namespace Projekt_NET.Controllers
             return File(stream, "application/pdf", $"Paczka_{package.PackageId}.pdf");
         }
 
-        private Document GeneratePackagePdf(Package package)
+        private Document GeneratePackagePdf(Package package, Delivery? delivery, List<DeliveryLog> logs)
         {
             return Document.Create(container =>
             {
@@ -306,11 +324,50 @@ namespace Projekt_NET.Controllers
                         col.Item().Text($"Adres odbioru: {package.PickupAddress}");
                         col.Item().Text($"Adres dostawy: {package.TargetAddress}");
                         col.Item().Text($"Waga: {package.Weight ?? 0} kg");
-                        col.Item().Text($"Dron: {(package.Drone != null ? package.Drone.CallSign : "Nieprzypisany")}");
+                        col.Item().Text($"Dron początkowy: {(package.Drone != null ? package.Drone.CallSign : "Nieprzypisany")}");
+                        col.Item().Text("");
+
+                        if (delivery?.FlightPath?.FlightList != null && delivery.FlightPath.FlightList.Any())
+                        {
+                            col.Item().Text("Ścieżka lotu z paczką:").Bold().FontSize(16);
+
+                            var flights = delivery.FlightPath.FlightList
+                                .OrderBy(f => f.DepDate)
+                                .Where((f, index) => index % 2 == 0)
+                                .ToList();
+
+                            foreach (var flight in flights)
+                            {
+                                var dep = flight.DepDate.ToString("yyyy-MM-dd");
+                                var arr = flight.ArrivDate?.ToString("yyyy-MM-dd") ?? "-";
+                                var coords = $"{flight.DeliveryCoordinates.Latitude}, {flight.DeliveryCoordinates.Longitude}";
+                                var drone = flight.Drone?.CallSign ?? "Brak";
+
+                                col.Item().Text($"Data odlotu: {dep}");
+                                col.Item().Text($"Data przylotu: {arr}");
+                                col.Item().Text($"Cel: {coords}");
+                                col.Item().Text($"Dron: {drone}");
+                                col.Item().Text("");
+                            }
+
+
+                            col.Item().Text("");
+                        }
+
+                        if (logs.Any())
+                        {
+                            col.Item().Text("Dziennik dostawy:").Bold().FontSize(16);
+                            foreach (var log in logs.OrderBy(l => l.LogDate))
+                            {
+                                col.Item().Text($" - {log.LogDate:yyyy-MM-dd HH:mm}: {log.Remarks}");
+                            }
+                        }
                     });
                 });
             });
         }
+
+
 
         [HttpGet]
         [Route("GetDistance")]

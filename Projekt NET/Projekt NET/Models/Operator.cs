@@ -14,10 +14,11 @@ namespace Projekt_NET.Models
         [Phone(ErrorMessage = "Enter a valid phone number.")]
         public string? PhoneNumber { get; set; }
 
-        [ForeignKey("DroneCloud")]
-        public int DroneCloudId { get; set; }
+        [ForeignKey("Drone")]
+        public int? DroneId { get; set; }
 
-        public List<DroneCloud>? DroneClouds { get; set; }
+        [ForeignKey("Client")]
+        public int ClientId { get; set; }
     }
 
 }

@@ -28,5 +28,11 @@ namespace Projekt_NET.Models
         public Coordinate DeliveryCoordinates { get; set; } = new();
 
         public int Steps { get; set; }
+
+        [ForeignKey("FlightPath")]
+        public int? FlightPathId { get; set; }
+
+        public FlightPath? FlightPath { get; set; }
+
     }
 }

@@ -14,7 +14,7 @@ namespace Projekt_NET.Models.System
         public DbSet<Model> Models { get; set; }
         public DbSet<Package> Packages { get; set; }
         public DbSet<Delivery> Deliveries { get; set; }
-        public DbSet<DeliveryLog> Deliverylogs { get; set; }
+        public DbSet<DeliveryLog> DeliveryLogs { get; set; }
         public DbSet<Flight> Flights { get; set; }
         public DbSet<FlightPath> FlightPaths { get; set; }
         public DbSet<Operator> Operators { get; set; }

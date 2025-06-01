@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Projekt_NET.Models.System;
 
@@ -11,9 +12,11 @@ using Projekt_NET.Models.System;
 namespace Projekt_NET.Migrations
 {
     [DbContext(typeof(DroneDbContext))]
-    partial class DroneDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250531202819_Last")]
+    partial class Last
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -432,7 +435,7 @@ namespace Projekt_NET.Migrations
                         .HasForeignKey("DroneId")
                         .OnDelete(DeleteBehavior.SetNull);
 
-                    b.HasOne("Projekt_NET.Models.FlightPath", "FlightPath")
+                    b.HasOne("Projekt_NET.Models.FlightPath", null)
                         .WithMany("FlightList")
                         .HasForeignKey("FlightPathId");
 
@@ -459,8 +462,6 @@ namespace Projekt_NET.Migrations
                         .IsRequired();
 
                     b.Navigation("Drone");
-
-                    b.Navigation("FlightPath");
                 });
 
             modelBuilder.Entity("Projekt_NET.Models.Package", b =>

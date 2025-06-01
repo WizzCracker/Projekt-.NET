@@ -8,15 +8,12 @@ namespace Projekt_NET.Models
         [Key]
         public int DeliveryLogId { get; set; }
 
-        [ForeignKey("Package")]
-        public int PackageId { get; set; }
+        [ForeignKey("Delivery")]
+        public int DeliveryId { get; set; }
 
-        public Package Package { get; set; }
+        public Delivery Delivery { get; set; }
 
         public DateTime LogDate { get; set; }
-
-        [Required]
-        public DStatus status { get; set; }
 
         public string Remarks { get; set; }
     }
