@@ -9,7 +9,7 @@
 
         public static double HaversineDistance(double lat1, double lon1, double lat2, double lon2)
         {
-            const double R = 6371; // Earth radius in km
+            const double R = 6371;
             double dLat = ToRadians(lat2 - lat1);
             double dLon = ToRadians(lon2 - lon1);
 
@@ -92,7 +92,6 @@
 
             if (t >= -epsilon && t <= 1 + epsilon && u >= -epsilon && u <= 1 + epsilon)
             {
-                // Przyciągnięcie wartości t i u do zakresu [0,1], jeśli są minimalnie poza nim
                 t = Math.Clamp(t, 0, 1);
                 u = Math.Clamp(u, 0, 1);
 
@@ -110,7 +109,7 @@
 
         public static Coordinate MovePointTowards(Coordinate from, Coordinate to, double meters)
         {
-            const double EarthRadius = 6371000; // metry
+            const double EarthRadius = 6371000;
             var bearing = Math.Atan2(
                 to.Longitude - from.Longitude,
                 to.Latitude - from.Latitude
@@ -163,7 +162,6 @@
 
         private static double DistancePointToSegment(Coordinate p, Coordinate v, Coordinate w)
         {
-            // Przekształcenie do wektora na płaszczyźnie
             double lat1 = v.Latitude;
             double lon1 = v.Longitude;
             double lat2 = w.Latitude;
@@ -172,19 +170,15 @@
             double latP = p.Latitude;
             double lonP = p.Longitude;
 
-            // obliczanie długości segmentu kwadrat (w stopniach)
             double l2 = Math.Pow(lat2 - lat1, 2) + Math.Pow(lon2 - lon1, 2);
-            if (l2 == 0.0) return HaversineDistance(latP, lonP, lat1, lon1) * 1000; // v == w, odległość punktu do v
+            if (l2 == 0.0) return HaversineDistance(latP, lonP, lat1, lon1) * 1000;
 
-            // parametry t określające projekcję punktu na segment linii
             double t = ((latP - lat1) * (lat2 - lat1) + (lonP - lon1) * (lon2 - lon1)) / l2;
             t = Math.Max(0, Math.Min(1, t));
 
-            // punkt projekcji na segmencie
             double projLat = lat1 + t * (lat2 - lat1);
             double projLon = lon1 + t * (lon2 - lon1);
 
-            // odległość punktu od punktu projekcji (w metrach)
             return HaversineDistance(latP, lonP, projLat, projLon) * 1000;
         }
 

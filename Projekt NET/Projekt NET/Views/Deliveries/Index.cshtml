@@ -1,0 +1,41 @@
+﻿@model IEnumerable<Projekt_NET.Models.Delivery>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>Index</h1>
+
+<p>
+    <a asp-action="Create">Create New</a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.Package)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FlightPath)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.Package.PickupAddress)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FlightPath.FlightPathId)
+            </td>
+            <td>
+                <a asp-action="Edit" asp-route-id="@item.DeliveryId">Edit</a> |
+                <a asp-action="Details" asp-route-id="@item.DeliveryId">Details</a> |
+                <a asp-action="Delete" asp-route-id="@item.DeliveryId">Delete</a>
+            </td>
+        </tr>
+}
+    </tbody>
+</table>

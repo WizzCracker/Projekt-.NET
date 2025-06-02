@@ -9,7 +9,7 @@ public class WeatherData
 
 public class Wind
 {
-    public double Speed { get; set; } // w m/s
+    public double Speed { get; set; } 
 }
 
 public class Rain
@@ -20,5 +20,5 @@ public class Rain
 
 public class WeatherCondition
 {
-    public string Main { get; set; } // np. Rain, Thunderstorm
+    public string Main { get; set; }
 }

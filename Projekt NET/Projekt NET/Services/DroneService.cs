@@ -55,7 +55,7 @@ namespace Projekt_NET.Services
                     .Include(d => d.Model)
                     .FirstOrDefaultAsync(d => d.DroneId == droneId);
 
-                if (drone != null)
+                if (drone != null && drone.Status == DStatus.Active)
                 {
                     await drone.MoveToAsync(latitude, longitude, context, cancellationToken);
                 }
@@ -89,10 +89,7 @@ namespace Projekt_NET.Services
             return true;
         }
 
-        public (Coordinate adjustedCoordinate, bool wasClipped, string? errorMessage) AdjustCoordinateToDistrictBoundary(
-        List<Coordinate> districtBoundary,
-        Coordinate currentPosition,
-        Coordinate targetPosition)
+        public (Coordinate adjustedCoordinate, bool wasClipped, string? errorMessage) AdjustCoordinateToDistrictBoundary(List<Coordinate> districtBoundary,Coordinate currentPosition,Coordinate targetPosition)
         {
             if (GeoFunctions.IsPointInDistrict(districtBoundary, targetPosition))
             {
@@ -108,13 +105,6 @@ namespace Projekt_NET.Services
 
             return (intersection, true, null);
         }
-
-
-
-
-
-
-
 
         public async Task<bool> HandleCrossDistrictFlightAsync(int droneId, double targetLat, double targetLng, int? packageId = null)
         {
@@ -263,14 +253,6 @@ namespace Projekt_NET.Services
 
             return result;
         }
-
-
-
-
-
     }
-
-
-
 
 }

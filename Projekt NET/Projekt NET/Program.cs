@@ -92,7 +92,7 @@ app.UseCors(policy =>
 {
     policy.AllowAnyOrigin()
           .AllowAnyHeader()
-          .WithMethods("GET", "POST");
+          .WithMethods("GET");
 });
 
 app.UseHttpsRedirection();
