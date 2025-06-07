@@ -75,7 +75,7 @@ namespace Projekt_NET.Controllers
         [HttpPost]
         [Route("Dodaj")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Weight,PickupAddress,TargetAddress")] Package package)
+        public async Task<IActionResult> Create([Bind("Weight,PickupAddress,TargetAddress")] Package package, IFormFile? ImageFile)
         {
             if (!ModelState.IsValid)
                 return View(package);
@@ -99,6 +99,28 @@ namespace Projekt_NET.Controllers
             {
                 ModelState.AddModelError("TargetAddress", "Nie udało się zgeokodować adresu dostawy.");
                 return View(package);
+            }
+
+            double distance = GeoFunctions.HaversineDistance(pickupCoords.Value.lat, pickupCoords.Value.lng, deliveryCoords.Value.lat, deliveryCoords.Value.lng);
+            double price = 20 + (package.Weight ?? 0) * 2 + distance;
+            package.Price = price;
+
+            if (ImageFile != null && ImageFile.Length > 0)
+            {
+                var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
+
+                if (!Directory.Exists(uploadsFolder))
+                    Directory.CreateDirectory(uploadsFolder);
+
+                var uniqueFileName = Guid.NewGuid().ToString() + Path.GetExtension(ImageFile.FileName);
+                var filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+                using (var fileStream = new FileStream(filePath, FileMode.Create))
+                {
+                    await ImageFile.CopyToAsync(fileStream);
+                }
+
+                package.ImagePath = "/uploads/" + uniqueFileName;
             }
 
             Drone drone = null;
@@ -176,7 +198,7 @@ namespace Projekt_NET.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost("Edycja/{id}")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("PackageId,ClientId,DroneId,Weight,TargetAddress")] Package package)
+        public async Task<IActionResult> Edit(int id, [Bind("PackageId,ClientId,DroneId,Weight,TargetAddress,PickupAddress")] Package package, IFormFile? ImageFile)
         {
             if (id != package.PackageId)
             {
@@ -195,6 +217,30 @@ namespace Projekt_NET.Controllers
                     ViewData["ClientId"] = new SelectList(_context.Clients, "ClientId", "Name", package.ClientId);
                     ViewData["DroneId"] = new SelectList(_context.Drones, "DroneId", "CallSign", package.DroneId);
                     return View(package);
+                }
+
+                if (ImageFile != null && ImageFile.Length > 0)
+                {
+                    if (!string.IsNullOrEmpty(package.ImagePath))
+                    {
+                        var oldPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", package.ImagePath.TrimStart('/'));
+                        if (System.IO.File.Exists(oldPath))
+                            System.IO.File.Delete(oldPath);
+                    }
+
+                    var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
+                    if (!Directory.Exists(uploadsFolder))
+                        Directory.CreateDirectory(uploadsFolder);
+
+                    var uniqueFileName = Guid.NewGuid().ToString() + Path.GetExtension(ImageFile.FileName);
+                    var filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+                    using (var fileStream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await ImageFile.CopyToAsync(fileStream);
+                    }
+
+                    package.ImagePath = "/uploads/" + uniqueFileName;
                 }
 
                 if (package.Weight > drone.Model.MaxCapacity)
@@ -257,6 +303,13 @@ namespace Projekt_NET.Controllers
             if (package != null)
             {
                 _context.Packages.Remove(package);
+            }
+
+            if (!string.IsNullOrEmpty(package.ImagePath))
+            {
+                var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", package.ImagePath.TrimStart('/'));
+                if (System.IO.File.Exists(filePath))
+                    System.IO.File.Delete(filePath);
             }
 
             await _context.SaveChangesAsync();
@@ -393,5 +446,6 @@ namespace Projekt_NET.Controllers
                 return Json(0);
             }
         }
+
     }
 }

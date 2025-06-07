@@ -17,7 +17,7 @@
     </div>
 
     <div class="col-md-8">
-        <form asp-action="Create">
+        <form asp-action="Create" enctype="multipart/form-data">
             <div class="form-group">
                 <label asp-for="Weight" class="control-label"></label>
                 <input asp-for="Weight" class="form-control" id="Weight" />
@@ -32,6 +32,10 @@
                 <label asp-for="TargetAddress" class="control-label"></label>
                 <input asp-for="TargetAddress" class="form-control" id="TargetAddress" />
                 <span asp-validation-for="TargetAddress" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label for="ImageFile">(Opcjonalnie) Załącz zdjęcie</label>
+                <input type="file" name="ImageFile" class="form-control" accept="image/*" />
             </div>
             <div class="form-group">
                 <input type="submit" value="Create" class="btn btn-primary" />

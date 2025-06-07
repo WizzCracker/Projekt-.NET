@@ -10,7 +10,7 @@
 <hr />
 <div class="row">
     <div class="col-md-4">
-        <form asp-action="Edit" asp-route-id="@Model.PackageId">
+        <form asp-action="Edit" asp-route-id="@Model.PackageId" enctype="multipart/form-data">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <input type="hidden" name="PackageId" value="@Model.PackageId" />
             <div class="form-group">
@@ -38,6 +38,19 @@
                 <input asp-for="TargetAddress" class="form-control" />
                 <span asp-validation-for="TargetAddress" class="text-danger"></span>
             </div>
+            <div class="form-group">
+                <label for="ImageFile">(Opcjonalnie) Zmień zdjęcie</label>
+                <input type="file" name="ImageFile" class="form-control" accept="image/*" />
+            </div>
+
+            @if (!string.IsNullOrEmpty(Model.ImagePath))
+            {
+                <div class="mb-3">
+                    <label>Aktualne zdjęcie:</label><br />
+                    <img src="@Model.ImagePath" alt="Zdjęcie paczki" style="max-width: 200px;" />
+                </div>
+            }
+
             <div class="form-group">
                 <input type="submit" value="Save" class="btn btn-primary" />
             </div>
