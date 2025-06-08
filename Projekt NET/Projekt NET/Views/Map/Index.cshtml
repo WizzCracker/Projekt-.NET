@@ -365,34 +365,55 @@
         document.getElementById('loadingOverlay').style.display = 'none';
     }
 
-    
 
-    async function DrawDrones(load = 1, map) {
-        if (load === 1) { document.getElementById('loadingOverlay').style.display = 'flex'; }
+
+        async function DrawDrones(load = 1, map) {
+        if (load === 1) {
+            document.getElementById('loadingOverlay').style.display = 'flex';
+        }
+
         droneMarkers.forEach(m => map.removeLayer(m));
         droneMarkers.length = 0;
-        return fetch('/Map/GetDroneData')
-            .then(res => res.json())
-            .then(data => {
-                data.markers.forEach(marker => {
-                    const icon = marker.isGrounded ? groundedDroneIcon : droneIcon;
-                    marker.popup += `<button onclick="moveDrone(${marker.droneId}, this)">Move</button><button onclick="stopDrone(${marker.droneId})">Stop</button><button onclick="fetchAndDisplayFlightLog(${marker.droneId})">Show Flight Log</button><br><button onclick="runDiagnostic(${marker.droneId})">Run Drone Diagnostic</button>`;
 
-                    const droneMarker = L.marker([marker.lat, marker.lng], {
-                        icon: icon
-                    }).addTo(map)
-                        .bindPopup(marker.popup, { closeOnClick: false });
-                    droneMarker.isGrounded = marker.isGrounded;
-                    droneMarker.droneId = marker.droneId;
-                    droneMarker.status = marker.status;
-                    droneMarker.originalPopup = marker.popup;
-                    droneMarkers.push(droneMarker);
-                });
-            });
-        if (load === 1) {
-            document.getElementById('loadingOverlay').style.display = 'none'
+        try {
+            const res = await fetch('/Map/GetDroneData');
+            const data = await res.json();
+
+            for (const marker of data.markers) {
+                const icon = marker.isGrounded ? groundedDroneIcon : droneIcon;
+
+                marker.popup += `<button onclick="moveDrone(${marker.droneId}, this)">Move</button>
+                                 <button onclick="stopDrone(${marker.droneId})">Stop</button>
+                                 <button onclick="fetchAndDisplayFlightLog(${marker.droneId})">Show Flight Log</button><br>
+                                 <button onclick="runDiagnostic(${marker.droneId})">Run Drone Diagnostic</button>`;
+
+                const droneMarker = L.marker([marker.lat, marker.lng], { icon })
+                    .addTo(map)
+                    .bindPopup(marker.popup, { closeOnClick: false });
+
+                droneMarker.isGrounded = marker.isGrounded;
+                droneMarker.droneId = marker.droneId;
+                droneMarker.status = marker.status;
+                droneMarker.originalPopup = marker.popup;
+                droneMarkers.push(droneMarker);
+
+                if (marker.isGrounded) {
+                    console.log(`Attempting to stop grounded drone ${marker.droneId}.`);
+                    await fetch(`/Map/Stop?droneId=${marker.droneId}`, {
+                        method: 'POST'
+                    });
+                }
+            }
+
+        } catch (error) {
+            console.error('Error drawing drones:', error);
+        } finally {
+            if (load === 1) {
+                document.getElementById('loadingOverlay').style.display = 'none';
+            }
         }
     }
+
 
     function stringToColor(str) {
         let hash = 0;
@@ -841,4 +862,3 @@
     }
     
 </script>
-

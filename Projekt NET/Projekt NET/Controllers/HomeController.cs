@@ -116,20 +116,24 @@ namespace Projekt_NET.Controllers
         [HttpPost]
         public async Task<IActionResult> Login(string login, string password)
         {
-            if (_authService.Validate(login, password) != null)
+            if (ModelState.IsValid)
             {
-                var claims = _authService.GetClaims(_authService.GetUser(login));
-                var principal = new ClaimsPrincipal(claims);
+                if (_authService.Validate(login, password) != null)
+                {
+                    var claims = _authService.GetClaims(_authService.GetUser(login));
+                    var principal = new ClaimsPrincipal(claims);
 
-                await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
+                    await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
 
-                return RedirectToAction("Index", "Home");
+                    return RedirectToAction("Index", "Home");
+                }
+                else
+                {
+                    ViewBag.Alert = "Niepoprawny login lub has³o.";
+                    return View();
+                }
             }
-            else
-            {
-                ViewBag.Alert = "Niepoprawny login lub has³o.";
-                return View();
-            }
+            return View();
         }
 
         [HttpGet]

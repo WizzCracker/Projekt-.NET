@@ -211,14 +211,17 @@ namespace Projekt_NET.Services
 
                 var moveTask2 = MoveDroneAsync(secondDrone.DroneId, intersection2.Latitude, intersection2.Longitude);
 
-                var distance = GeoFunctions.HaversineDistance(
-                    drone.Coordinate.Latitude, drone.Coordinate.Longitude,
-                    secondDrone.Coordinate.Latitude, secondDrone.Coordinate.Longitude);
-
-                if (distance > drone.Range || distance > secondDrone.Range)
-                    throw new InvalidOperationException("Drony za daleko.");
-
                 await Task.WhenAll(moveTask1, moveTask2);
+
+                var updatedDrone = await context.Drones.FindAsync(drone.DroneId);
+                var updatedSecondDrone = await context.Drones.FindAsync(secondDrone.DroneId);
+
+                var updatedDistance = GeoFunctions.HaversineDistance(
+                    updatedDrone.Coordinate.Latitude, updatedDrone.Coordinate.Longitude,
+                    updatedSecondDrone.Coordinate.Latitude, updatedSecondDrone.Coordinate.Longitude);
+
+                if (updatedDistance > updatedDrone.Range || updatedDistance > updatedSecondDrone.Range)
+                    throw new InvalidOperationException("Drony są za daleko po zakończeniu lotów.");
 
                 return await HandleRecursive(secondDrone.DroneId, intersection2, destination);
             }
