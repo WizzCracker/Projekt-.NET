@@ -60,24 +60,6 @@
         </form>
     </div>
 </div>
-
-<div>
-    <form asp-action="Move" method="post">
-        <input type="hidden" name="droneId" value="@Model?.DroneId" />
-
-        <div>
-            <label for="latitude">Latitude:</label>
-            <input type="number" step="any" name="latitude" required />
-        </div>
-
-        <div>
-            <label for="longitude">Longitude:</label>
-            <input type="number" step="any" name="longitude" required />
-        </div>
-
-        <button type="submit">Move Drone</button>
-    </form>
-</div>
 @if (TempData["Error"] != null)
 {
     <div class="alert alert-danger">
